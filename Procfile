@@ -1,0 +1,1 @@
+web: java -Dserver.port=$PORT -jar build/libs/alfio-2.0-M6-SNAPSHOT-boot.jar
