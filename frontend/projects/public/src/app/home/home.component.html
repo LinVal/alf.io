@@ -6,13 +6,11 @@
       <h1 translate="event-list.title"></h1>
 
       <div class="row justify-content-center mb-3 mt-3">
-        <div class="col-md-5" *ngFor="let event of events">
-          <app-basic-event-info [event]="event"></app-basic-event-info>
+        <div class="col-md-6" *ngFor="let event of events">
+          <app-basic-event-info [event]="event" [ticketsLeft]="getActualTicketCount(event)"></app-basic-event-info>
         </div>
       </div>
-      <div *ngIf="displayViewAllEventsButton" class="text-center mt-5 mb-5">
-        <a [routerLink]="allEventsPath" class="btn btn-default" translate="home.view.all.events"></a>
-      </div>
+      <!-- Knappen för att visa alla events har tagits bort eftersom alla events visas direkt -->
 
 
       <div class="alert text-center" *ngIf="events.length == 0">
@@ -31,9 +29,7 @@
         </div>
       </div>
 
-      <div *ngIf="displayViewAllSubscriptionsButton" class="text-center mt-5 mb-5">
-        <a [routerLink]="allSubscriptionsPath" class="btn btn-default" translate="home.view.all.subscriptions"></a>
-      </div>
+      <!-- Knappen för att visa alla prenumerationer har tagits bort eftersom alla prenumerationer visas direkt -->
     </div>
 
     <hr class="mt-5" *ngIf="linksContainer.termsAndConditionsUrl || linksContainer.privacyPolicyUrl">

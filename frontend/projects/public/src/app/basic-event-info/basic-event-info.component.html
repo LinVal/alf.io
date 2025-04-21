@@ -9,6 +9,10 @@
     <div class="text-body-secondary mt-1" *ngIf="!isEventOnline">
       <fa-icon [icon]="['fas', 'map-marker-alt']"></fa-icon> &nbsp; {{event.location}}
     </div>
+    <div class="mt-2">
+      <span *ngIf="getTicketsLeft() > 0" class="badge bg-success">{{ getTicketsLeft() }} {{'event-list.tickets-left' | translate}}</span>
+      <span *ngIf="getTicketsLeft() === 0" class="badge bg-danger">{{'show-event.sold-out' | translate}}</span>
+    </div>
   </div>
   <div class="card-footer border-top-0 bg-white">
     <div class="d-flex justify-content-end">

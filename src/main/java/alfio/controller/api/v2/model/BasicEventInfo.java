@@ -23,7 +23,6 @@ import lombok.Getter;
 import java.util.List;
 import java.util.Map;
 
-@AllArgsConstructor
 @Getter
 public class BasicEventInfo implements DateValidity {
 
@@ -41,4 +40,35 @@ public class BasicEventInfo implements DateValidity {
     private final Map<String, String> formattedEndDate;
     private final Map<String, String> formattedEndTime;
     private final List<Language> contentLanguages;
+    private final Integer availableTicketsCount;
+    
+    public BasicEventInfo(String shortName, String fileBlobId, Map<String, String> title, EventFormat format, String location,
+                         String timeZone, DatesWithTimeZoneOffset datesWithOffset, boolean sameDay, 
+                         Map<String, String> formattedBeginDate, Map<String, String> formattedBeginTime,
+                         Map<String, String> formattedEndDate, Map<String, String> formattedEndTime,
+                         List<Language> contentLanguages) {
+        this(shortName, fileBlobId, title, format, location, timeZone, datesWithOffset, sameDay, 
+             formattedBeginDate, formattedBeginTime, formattedEndDate, formattedEndTime, contentLanguages, null);
+    }
+    
+    public BasicEventInfo(String shortName, String fileBlobId, Map<String, String> title, EventFormat format, String location,
+                         String timeZone, DatesWithTimeZoneOffset datesWithOffset, boolean sameDay, 
+                         Map<String, String> formattedBeginDate, Map<String, String> formattedBeginTime,
+                         Map<String, String> formattedEndDate, Map<String, String> formattedEndTime,
+                         List<Language> contentLanguages, Integer availableTicketsCount) {
+        this.shortName = shortName;
+        this.fileBlobId = fileBlobId;
+        this.title = title;
+        this.format = format;
+        this.location = location;
+        this.timeZone = timeZone;
+        this.datesWithOffset = datesWithOffset;
+        this.sameDay = sameDay;
+        this.formattedBeginDate = formattedBeginDate;
+        this.formattedBeginTime = formattedBeginTime;
+        this.formattedEndDate = formattedEndDate;
+        this.formattedEndTime = formattedEndTime;
+        this.contentLanguages = contentLanguages;
+        this.availableTicketsCount = availableTicketsCount;
+    }
 }

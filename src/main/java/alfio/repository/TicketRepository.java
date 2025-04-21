@@ -121,7 +121,34 @@ public interface TicketRepository {
     @Query("select count(*) from ticket where status = 'FREE' and category_id is null and event_id = :eventId")
     Integer countFreeTicketsForUnbounded(@Bind("eventId") int eventId);
 
-    @Query("select case(show_public_statistics) when true then dynamic_allocation else 0 end from events_statistics where id = :eventId")
+    @Query("""
+        select case(show_public_statistics) 
+            when true then (
+                -- Return sum of available tickets across all categories
+                select coalesce(
+                    -- If bounded categories exist, add up available tickets from each category
+                    (
+                        select sum(max_tickets - 
+                            (
+                                select count(*) 
+                                from ticket t 
+                                where t.category_id = tc.id 
+                                and t.status in ('TO_BE_PAID', 'ACQUIRED', 'CHECKED_IN', 'PENDING')
+                            )
+                        ) 
+                        from ticket_category tc
+                        where tc.event_id = :eventId 
+                        and tc.bounded = true
+                        and tc.tc_status = 'ACTIVE'
+                        and tc.expiration > now()
+                    ), 0
+                ) +
+                -- Also add any dynamic allocation from unbounded categories
+                dynamic_allocation
+            )
+            else 0 
+        end from events_statistics where id = :eventId
+    """)
     Integer countFreeTicketsForPublicStatistics(@Bind("eventId") int eventId);
 
     @Query("select count(*) from ticket where status in ('FREE', 'RELEASED') and category_id is null and event_id = :eventId")
