@@ -52,8 +52,18 @@ apply plugin: 'project-report'
 
 // MJML email templates translations to HTML
 node {
+    version = '22.15.0'
+    npmVersion = '10.1.0'
     download = true
-    version = "22.15.0"
+    nodeModulesDir = file("${projectDir}/frontend")
+}
+
+tasks.register('frontendNpmInstall', com.github.gradle.node.npm.task.NpmTask) {
+    args = ['ci', '--legacy-peer-deps']
+}
+
+tasks.named('build') {
+    dependsOn 'frontendNpmInstall'
 }
 
 //as pointed out by @facundofarias, we should validate minimum javac version
