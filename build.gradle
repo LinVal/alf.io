@@ -379,9 +379,8 @@ tasks.register('dockerize', Copy) {
 
 // Frontend tasks
 tasks.register('frontendNpmInstall', NpmTask) {
-    args = ['--prefix', "${project.projectDir}/frontend", 'install', '--production']
+    args = ['--prefix', "${project.projectDir}/frontend", 'install']
 }
-
 
 tasks.register('frontendBuild', NpmTask) {
     dependsOn frontendNpmInstall
@@ -390,7 +389,7 @@ tasks.register('frontendBuild', NpmTask) {
 }
 
 tasks.register('frontendAdminNpmInstall', NpmTask) {
-    args = ['--prefix', "${project.projectDir}/frontend/admin", 'install', '--production']
+    args = ['--prefix', "${project.projectDir}/frontend/admin", 'install']
 }
 
 tasks.register('frontendAdminBuild', NpmTask) {
