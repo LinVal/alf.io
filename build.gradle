@@ -54,6 +54,7 @@ apply plugin: 'project-report'
 node {
     download = true
     version = "22.15.0"
+    nodeModulesDir = file("${project.projectDir}/frontend")
 }
 
 //as pointed out by @facundofarias, we should validate minimum javac version
