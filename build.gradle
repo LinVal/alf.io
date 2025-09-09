@@ -11,6 +11,8 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+import com.github.gradle.node.npm.task.NpmTask
+
 buildscript {
 
     dependencies {
@@ -54,7 +56,10 @@ apply plugin: 'project-report'
 node {
     download = true
     version = "22.15.0"
+    npmVersion = "10.9.3"  // matcha nyare npm för att undvika varningar
+    nodeProjectDir = file("${projectDir}/frontend")
 }
+
 
 //as pointed out by @facundofarias, we should validate minimum javac version
 tasks.register('validate') {
@@ -372,8 +377,9 @@ tasks.register('dockerize', Copy) {
     filter(ReplaceTokens, tokens: [ALFIO_VERSION: project.version])
 }
 
+// Frontend tasks
 tasks.register('frontendNpmInstall', NpmTask) {
-    args = ['--prefix', "${project.projectDir}/frontend", 'ci']
+    args = ['--prefix', "${project.projectDir}/frontend", 'install']
 }
 
 tasks.register('frontendBuild', NpmTask) {
@@ -383,7 +389,7 @@ tasks.register('frontendBuild', NpmTask) {
 }
 
 tasks.register('frontendAdminNpmInstall', NpmTask) {
-    args = ['--prefix', "${project.projectDir}/frontend/admin", 'ci']
+    args = ['--prefix', "${project.projectDir}/frontend/admin", 'install']
 }
 
 tasks.register('frontendAdminBuild', NpmTask) {
@@ -445,8 +451,9 @@ release {
 }
 
 bootJar {
-    dependsOn publicFrontendIndexTransform//, adminFrontendIndexTransform
+    dependsOn frontendBuild, frontendAdminBuild, publicFrontendIndexTransform
     archiveClassifier.set('boot')
+
     from(tasks.named("frontendBuild")) {
         into 'BOOT-INF/classes/resources/'
     }
@@ -455,14 +462,6 @@ bootJar {
     }
     from(tasks.named("publicFrontendIndexTransform")) {
         rename 'alfio-public-frontend-index.html', 'BOOT-INF/classes/alfio-public-frontend-index.html'
-    }
-    /*from(tasks.named("adminFrontendIndexTransform")) {
-        rename 'alfio-admin-frontend-index.html', 'BOOT-INF/classes/alfio-admin-frontend-index.html'
-    }*/
-    def bowerDir = "resources/bower_components"
-    def excludesFile = new File("./lib_exclude")
-    if(excludesFile.exists()) {
-        exclude(excludesFile.readLines().collect({ bowerDir + it }))
     }
 }
 
