@@ -121,20 +121,14 @@ public class EventApiV2Controller {
     @GetMapping("events")
     public ResponseEntity<List<BasicEventInfo>> listEvents(SearchOptions searchOptions) {
 
-        var contentLanguages = i18nManager.getAvailableLanguages();
-
-        // Skapa Collator för svensk sortering
-        Collator collator = Collator.getInstance(new Locale("sv", "SE"));
-        collator.setStrength(Collator.PRIMARY); // Ignorera case
-
         var events = eventManager.getPublishedEvents(searchOptions)
             .stream()
             .map(e -> {
-                var messageSource = messageSourceManager.getMessageSourceFor(e);
-                var formattedDates = Formatters.getFormattedDates(e, messageSource, contentLanguages);
+                var formattedDates = Formatters.getFormattedDates(e, null, List.of());
 
-                // Kontrollera om biljettindikator ska visas
-                var configurationsValues = configurationManager.getFor(List.of(DISPLAY_TICKETS_LEFT_INDICATOR), e.getConfigurationLevel());
+                var configurationsValues = configurationManager.getFor(
+                    List.of(DISPLAY_TICKETS_LEFT_INDICATOR), e.getConfigurationLevel()
+                );
                 Integer availableTicketsCount = null;
                 if (configurationsValues.get(DISPLAY_TICKETS_LEFT_INDICATOR).getValueAsBooleanOrDefault()) {
                     availableTicketsCount = ticketRepository.countFreeTicketsForPublicStatistics(e.getId());
@@ -155,12 +149,15 @@ public class EventApiV2Controller {
                     formattedDates.endTime,
                     e.getContentLanguages().stream()
                         .map(cl -> new Language(cl.locale().getLanguage(), cl.getDisplayLanguage()))
-                        .collect(toList()),
+                        .collect(Collectors.toList()),
                     availableTicketsCount
                 );
             })
-            // Sortera alfabetiskt med svensk kollation
-            .sorted(Comparator.comparing(BasicEventInfo::getTitle, collator))
+            // Sortera baserat på “första tillgängliga titel” i Map<String,String>
+            .sorted(Comparator.comparing(
+                e -> e.getTitle().values().stream().findFirst().orElse(""),
+                String.CASE_INSENSITIVE_ORDER
+            ))
             .collect(Collectors.toList());
 
         return new ResponseEntity<>(events, getCorsHeaders(), HttpStatus.OK);
