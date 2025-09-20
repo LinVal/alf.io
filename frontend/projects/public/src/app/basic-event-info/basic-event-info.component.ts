@@ -16,12 +16,22 @@ export class BasicEventInfoComponent implements OnInit {
 
   @Input()
   params: Params;
+  
+  @Input()
+  ticketsLeft?: number;
 
   constructor(private translateService: TranslateService) { }
 
   ngOnInit(): void {
   }
 
+  // Helper method to ensure we're always getting a numeric value
+  public getTicketsLeft(): number {
+    if (this.ticketsLeft !== undefined && this.ticketsLeft !== null) {
+      return Number(this.ticketsLeft);
+    }
+    return 0;
+  }
 
   public get isEventOnline(): boolean {
     return this.event.format === 'ONLINE';

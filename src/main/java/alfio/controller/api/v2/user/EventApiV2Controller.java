@@ -128,10 +128,19 @@ public class EventApiV2Controller {
             .map(e -> {
                 var messageSource = messageSourceManager.getMessageSourceFor(e);
                 var formattedDates = Formatters.getFormattedDates(e, messageSource, contentLanguages);
+
+                // Get availability configuration and fetch ticket count if enabled
+                var configurationsValues = configurationManager.getFor(List.of(DISPLAY_TICKETS_LEFT_INDICATOR), e.getConfigurationLevel());
+                Integer availableTicketsCount = null;
+                if (configurationsValues.get(DISPLAY_TICKETS_LEFT_INDICATOR).getValueAsBooleanOrDefault()) {
+                    availableTicketsCount = ticketRepository.countFreeTicketsForPublicStatistics(e.getId());
+                }
+
                 return new BasicEventInfo(e.getShortName(), e.getFileBlobId(), e.getTitle(), e.getFormat(), e.getLocation(),
                     e.getTimeZone(), DatesWithTimeZoneOffset.fromEvent(e), e.getSameDay(), formattedDates.beginDate, formattedDates.beginTime,
                     formattedDates.endDate, formattedDates.endTime,
-                    e.getContentLanguages().stream().map(cl -> new Language(cl.locale().getLanguage(), cl.getDisplayLanguage())).collect(toList()));
+                    e.getContentLanguages().stream().map(cl -> new Language(cl.getLocale().getLanguage(), cl.getDisplayLanguage())).collect(toList()),
+                    availableTicketsCount);
             })
             .collect(Collectors.toList());
         return new ResponseEntity<>(events, getCorsHeaders(), HttpStatus.OK);
@@ -369,7 +378,7 @@ public class EventApiV2Controller {
         }
 
         for (ContentLanguage cl : event.getContentLanguages()) {
-            res.put(cl.locale().getLanguage(), messageSource.getMessage(code, new Object[]{amount}, cl.locale()));
+            res.put(cl.getLocale().getLanguage(), messageSource.getMessage(code, new Object[]{amount}, cl.getLocale()));
         }
         return res;
     }

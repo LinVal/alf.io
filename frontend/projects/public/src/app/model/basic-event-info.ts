@@ -19,4 +19,7 @@ export class BasicEventInfo implements DateValidity, Localized {
   formattedEndTime: {[key: string]: string};
   //
   contentLanguages: Language[] = [];
+  
+  // ticket availability
+  availableTicketsCount?: number; // This should always be a number
 }

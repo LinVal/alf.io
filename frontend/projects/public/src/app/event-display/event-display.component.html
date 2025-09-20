@@ -17,7 +17,7 @@
     <div class="markdown-content" [innerHTML]="event.description[translate.currentLang]"></div>
 
     <div #tickets></div>
-    <h2 class="mt-4 mb-4">{{'show-event.tickets' | translate}} <span *ngIf="ticketsLeftCountVisible()" class="badge text-bg-warning ms-2">{{"show-event.tickets.left" | translate: {'0': event.availableTicketsCount} }}</span></h2>
+    <h2 class="mt-4 mb-4">{{'show-event.tickets' | translate}} <span *ngIf="ticketsLeftCountVisible()" class="badge text-bg-success ms-2">{{"show-event.tickets.left" | translate: {'0': event.availableTicketsCount} }}</span></h2>
 
     <div class="alert alert-danger" role="alert" *ngIf="globalErrors && globalErrors.length > 0">
       <div *ngFor="let err of globalErrors"><strong>{{err.code | translate: err.arguments}}</strong></div>
@@ -105,7 +105,7 @@
           </span>
           <div class="item-badges mb-2">
             <span *ngIf="displayOnlineTicketTag(category)" class="badge text-bg-success">{{'event.online.badge' | translate}}</span>
-            <span class="badge text-bg-warning" [class.ms-2]="displayOnlineTicketTag(category)" *ngIf="ticketsLeftCountVisibleForCategory(category)">{{"show-event.tickets.left" | translate: {'0': category.availableTickets} }}</span>
+            <span class="badge text-bg-success" [class.ms-2]="displayOnlineTicketTag(category)" *ngIf="ticketsLeftCountVisibleForCategory(category)">{{"show-event.tickets.left" | translate: {'0': category.availableTickets} }}</span>
           </div>
           <div class="item-price">
             <span *ngIf="category.free" translate="common.free"></span>
