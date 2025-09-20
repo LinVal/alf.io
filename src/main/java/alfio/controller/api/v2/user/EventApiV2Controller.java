@@ -54,6 +54,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.text.Collator;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -117,11 +118,14 @@ public class EventApiV2Controller {
         this.additionalServiceManager = additionalServiceManager;
     }
 
-
     @GetMapping("events")
     public ResponseEntity<List<BasicEventInfo>> listEvents(SearchOptions searchOptions) {
 
         var contentLanguages = i18nManager.getAvailableLanguages();
+
+        // Skapa Collator för svensk sortering
+        Collator collator = Collator.getInstance(new Locale("sv", "SE"));
+        collator.setStrength(Collator.PRIMARY); // Ignorera case
 
         var events = eventManager.getPublishedEvents(searchOptions)
             .stream()
@@ -129,20 +133,36 @@ public class EventApiV2Controller {
                 var messageSource = messageSourceManager.getMessageSourceFor(e);
                 var formattedDates = Formatters.getFormattedDates(e, messageSource, contentLanguages);
 
-                // Get availability configuration and fetch ticket count if enabled
+                // Kontrollera om biljettindikator ska visas
                 var configurationsValues = configurationManager.getFor(List.of(DISPLAY_TICKETS_LEFT_INDICATOR), e.getConfigurationLevel());
                 Integer availableTicketsCount = null;
                 if (configurationsValues.get(DISPLAY_TICKETS_LEFT_INDICATOR).getValueAsBooleanOrDefault()) {
                     availableTicketsCount = ticketRepository.countFreeTicketsForPublicStatistics(e.getId());
                 }
 
-                return new BasicEventInfo(e.getShortName(), e.getFileBlobId(), e.getTitle(), e.getFormat(), e.getLocation(),
-                    e.getTimeZone(), DatesWithTimeZoneOffset.fromEvent(e), e.getSameDay(), formattedDates.beginDate, formattedDates.beginTime,
-                    formattedDates.endDate, formattedDates.endTime,
-                    e.getContentLanguages().stream().map(cl -> new Language(cl.locale().getLanguage(), cl.getDisplayLanguage())).collect(toList()),
-                    availableTicketsCount);
+                return new BasicEventInfo(
+                    e.getShortName(),
+                    e.getFileBlobId(),
+                    e.getTitle(),
+                    e.getFormat(),
+                    e.getLocation(),
+                    e.getTimeZone(),
+                    DatesWithTimeZoneOffset.fromEvent(e),
+                    e.getSameDay(),
+                    formattedDates.beginDate,
+                    formattedDates.beginTime,
+                    formattedDates.endDate,
+                    formattedDates.endTime,
+                    e.getContentLanguages().stream()
+                        .map(cl -> new Language(cl.locale().getLanguage(), cl.getDisplayLanguage()))
+                        .collect(toList()),
+                    availableTicketsCount
+                );
             })
+            // Sortera alfabetiskt med svensk kollation
+            .sorted(Comparator.comparing(BasicEventInfo::getTitle, collator))
             .collect(Collectors.toList());
+
         return new ResponseEntity<>(events, getCorsHeaders(), HttpStatus.OK);
     }
 
