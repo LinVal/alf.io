@@ -121,11 +121,16 @@ public class EventApiV2Controller {
     @GetMapping("events")
     public ResponseEntity<List<BasicEventInfo>> listEvents(SearchOptions searchOptions) {
 
+        // Hämta alla tillgängliga språk
+        var contentLanguages = i18nManager.getAvailableLanguages();
+
         var events = eventManager.getPublishedEvents(searchOptions)
             .stream()
             .map(e -> {
-                var formattedDates = Formatters.getFormattedDates(e, null, List.of());
+                var messageSource = messageSourceManager.getMessageSourceFor(e);
+                var formattedDates = Formatters.getFormattedDates(e, messageSource, contentLanguages);
 
+                // Biljettindikator
                 var configurationsValues = configurationManager.getFor(
                     List.of(DISPLAY_TICKETS_LEFT_INDICATOR), e.getConfigurationLevel()
                 );
@@ -147,13 +152,13 @@ public class EventApiV2Controller {
                     formattedDates.beginTime,
                     formattedDates.endDate,
                     formattedDates.endTime,
-                    e.getContentLanguages().stream()
+                    contentLanguages.stream()
                         .map(cl -> new Language(cl.locale().getLanguage(), cl.getDisplayLanguage()))
                         .collect(Collectors.toList()),
                     availableTicketsCount
                 );
             })
-            // Sortera baserat på “första tillgängliga titel” i Map<String,String>
+            // Sortera internationellt på första titelvärdet i Map
             .sorted(Comparator.comparing(
                 e -> e.getTitle().values().stream().findFirst().orElse(""),
                 String.CASE_INSENSITIVE_ORDER
