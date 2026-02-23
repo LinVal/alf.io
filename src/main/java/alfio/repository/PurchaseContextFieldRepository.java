@@ -61,6 +61,15 @@ public interface PurchaseContextFieldRepository extends FieldRepository {
         " where ticket_id_fk = :ticketId and field_name in (:fieldNames)")
     List<FieldValueAndDescription> findValueForTicketId(@Bind("ticketId") int id, @Bind("fieldNames") Set<String> fieldNames);
 
+    /**
+     * Returns **only** info that don't belong already to an additional item.
+     * @param id ticketId
+     * @return List of FieldValueAndDescription
+     */
+    @Query("select "+FIELD_VALUE_COLUMNS+", description from all_ticket_field_values " +
+        " where ticket_id_fk = :ticketId and display_at_check_in = true and additional_service_item_id_fk is null")
+    List<FieldValueAndDescription> findValuesForTicketAtCheckIn(@Bind("ticketId") int id);
+
     @Query("update purchase_context_field_value set field_value = :value where " + TICKET_ID_OR_SUBSCRIPTION_ID +
         " and field_configuration_id_fk = :fieldConfigurationId")
     int updateValue(@Bind("ticketId") Integer ticketId,
@@ -91,9 +100,6 @@ public interface PurchaseContextFieldRepository extends FieldRepository {
 
     @Query("delete from purchase_context_field_value where ticket_id_fk in (:ticketIds)")
     int deleteAllValuesForTicketIds(@Bind("ticketIds") List<Integer> ticketIds);
-
-    @Query("delete from purchase_context_field_value where subscription_id_fk = :subscriptionId")
-    int deleteAllValuesForSubscriptionId(@Bind("subscriptionId") UUID subscriptionId);
 
     @Query("""
         delete from purchase_context_field_value fv using ticket t, additional_service_item ai\
@@ -248,13 +254,6 @@ public interface PurchaseContextFieldRepository extends FieldRepository {
 
     @Query("update purchase_context_field_configuration set field_order = :order where id = :id")
     int updateFieldOrder(@Bind("id") long id, @Bind("order") int order);
-
-    @Query("""
-        select purchase_context_field_configuration.* from purchase_context_field_configuration\
-         inner join event on event.id = event_id_fk\
-         where short_name = :eventShortName order by field_order asc\
-        """)
-    List<PurchaseContextFieldConfiguration> findAdditionalFieldsForEvent(@Bind("eventShortName") String eventName);
 
     @Query("select count(*) from purchase_context_field_configuration where event_id_fk = :eventId")
     Integer countAdditionalFieldsForEvent(@Bind("eventId") int eventId);

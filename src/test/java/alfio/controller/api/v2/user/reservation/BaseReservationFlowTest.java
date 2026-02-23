@@ -39,6 +39,7 @@ import alfio.extension.ExtensionService;
 import alfio.manager.*;
 import alfio.manager.support.CheckInStatus;
 import alfio.manager.support.IncompatibleStateException;
+import alfio.manager.support.SuccessfulCheckIn;
 import alfio.manager.support.TicketAndCheckInResult;
 import alfio.manager.support.extension.ExtensionEvent;
 import alfio.model.*;
@@ -71,6 +72,7 @@ import com.google.zxing.qrcode.QRCodeReader;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -114,6 +116,7 @@ import static org.mockito.Mockito.mock;
 public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
 
     private static final Logger log = LoggerFactory.getLogger(BaseReservationFlowTest.class);
+    public static final String FIELD_2 = "field2";
     @Autowired
     protected ConfigurationRepository configurationRepository;
     @Autowired
@@ -209,15 +212,15 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
 
         // add additional fields before and after, with one mandatory
         var af = new AdditionalFieldRequest(-1, true, "field1", "text", true, false,null, null, null,
-            Map.of("en", new EventModification.Description("field en", "", null)), null, null);
+            Map.of("en", new EventModification.Description("field en", "", null)), null, null, true);
         purchaseContextFieldManager.addAdditionalField(context.event, af);
 
         var afId = purchaseContextFieldRepository.findAdditionalFieldsForEvent(context.event.getId()).get(0).getId();
 
         purchaseContextFieldRepository.updateFieldOrder(afId, -1);
 
-        var af2 = new AdditionalFieldRequest(1, true, "field2", "text", false, false,null, null, null,
-            Map.of("en", new EventModification.Description("field2 en", "", null)), null, null);
+        var af2 = new AdditionalFieldRequest(1, true, FIELD_2, "text", false, false,null, null, null,
+            Map.of("en", new EventModification.Description("field2 en", "", null)), null, null, null /* old client */);
         purchaseContextFieldManager.addAdditionalField(context.event, af2);
         //
 
@@ -230,7 +233,7 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
         //
 
         var af3 = new AdditionalFieldRequest(2, true, "field3", "text", true, false, null, null, null,
-            Map.of("en", new EventModification.Description("field3 en", "", null)), addServRes.getBody(), null);
+            Map.of("en", new EventModification.Description("field3 en", "", null)), addServRes.getBody(), null, null);
         purchaseContextFieldManager.addAdditionalField(context.event, af3);
 
 
@@ -313,16 +316,16 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
 
         //
 
-        assertEquals("Switzerland", translationsApiController.getCountries("en").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().get().name());
+        assertEquals("Switzerland", translationsApiController.getCountries("en").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().orElseThrow().name());
 
-        assertEquals("Greece", translationsApiController.getCountries("en").stream().filter(c->"GR".equals(c.isoCode())).findFirst().get().name());
+        assertEquals("Greece", translationsApiController.getCountries("en").stream().filter(c->"GR".equals(c.isoCode())).findFirst().orElseThrow().name());
 
-        assertEquals("Suisse", translationsApiController.getCountries("fr").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().get().name());
-        assertEquals("Svizzera", translationsApiController.getCountries("it").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().get().name());
-        assertEquals("Schweiz", translationsApiController.getCountries("de").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().get().name());
+        assertEquals("Suisse", translationsApiController.getCountries("fr").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().orElseThrow().name());
+        assertEquals("Svizzera", translationsApiController.getCountries("it").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().orElseThrow().name());
+        assertEquals("Schweiz", translationsApiController.getCountries("de").stream().filter( c-> "CH".equals(c.isoCode())).findFirst().orElseThrow().name());
 
         //EL -> greece for vat
-        assertEquals("Greece", translationsApiController.getCountriesForVat("en").stream().filter(c->"EL".equals(c.isoCode())).findFirst().get().name());
+        assertEquals("Greece", translationsApiController.getCountriesForVat("en").stream().filter(c->"EL".equals(c.isoCode())).findFirst().orElseThrow().name());
         assertEquals(27, translationsApiController.getEuCountriesForVat("en").size()); //
         //
 
@@ -1007,7 +1010,7 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
             var selectedTicket = reservation.getTicketsByCategory().get(0).getTickets().get(0);
             assertEquals("field1", selectedTicket.getTicketFieldConfigurationBeforeStandard().get(0).getName());
             assertTrue(selectedTicket.getTicketFieldConfigurationBeforeStandard().get(0).isRequired());
-            assertEquals("field2", selectedTicket.getTicketFieldConfigurationAfterStandard().get(0).getName());
+            assertEquals(FIELD_2, selectedTicket.getTicketFieldConfigurationAfterStandard().get(0).getName());
             assertFalse(selectedTicket.getTicketFieldConfigurationAfterStandard().get(0).isRequired());
 
             var contactForm = new ContactAndTicketsForm();
@@ -1300,6 +1303,12 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
                 TicketAndCheckInResult ticketAndcheckInResult = checkInApiController.checkIn(context.event.getId(), internalTicketIdentifier, tc2, principal);
                 assertEquals(CheckInStatus.SUCCESS, ticketAndcheckInResult.getResult().getStatus());
 
+                var fieldsToDisplay = ((SuccessfulCheckIn) ticketAndcheckInResult).getFieldsToDisplay();
+                assertNotNull(fieldsToDisplay);
+                assertEquals(1, fieldsToDisplay.size());
+                assertEquals("field1", fieldsToDisplay.get(0).getName());
+                assertTrue(StringUtils.isNotBlank(fieldsToDisplay.get(0).getValue()));
+
                 extLogs = extensionLogRepository.getPage(null, null, null, 100, 0);
                 assertEventLogged(extLogs, TICKET_CHECKED_IN, 2);
 
@@ -1355,7 +1364,7 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
                         @JsonProperty("Full name") String fullName,
                         @JsonProperty("Email") String email,
                         @JsonProperty("field1") String field1,
-                        @JsonProperty("field2") String field2,
+                        @JsonProperty(FIELD_2) String field2,
                         @JsonProperty("field3") String field3,
                         @JsonProperty("Sponsor notes") String notes,
                         @JsonProperty("Lead Status") SponsorScan.LeadStatus leadStatus,
@@ -1540,7 +1549,7 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
         paymentForm.setSelectedPaymentMethod(StaticPaymentMethods.BANK_TRANSFER);
 
         // bank transfer does not have a transaction, it's created on confirmOverview call
-        var tStatus = reservationApiV2Controller.getTransactionStatus(reservationId, StaticPaymentMethods.BANK_TRANSFER);
+        var tStatus = reservationApiV2Controller.getTransactionStatus(reservationId, StaticPaymentMethods.BANK_TRANSFER.name());
         assertEquals(HttpStatus.NOT_FOUND, tStatus.getStatusCode());
         //
         var promoCodeUsage = promoCodeRequestManager.retrieveDetailedUsage(promoCodeId, context.event.getId());
@@ -1553,7 +1562,7 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
 
         checkStatus(reservationId, HttpStatus.OK, true, TicketReservation.TicketReservationStatus.OFFLINE_PAYMENT, context);
 
-        tStatus = reservationApiV2Controller.getTransactionStatus(reservationId, StaticPaymentMethods.BANK_TRANSFER);
+        tStatus = reservationApiV2Controller.getTransactionStatus(reservationId, StaticPaymentMethods.BANK_TRANSFER.name());
         assertEquals(HttpStatus.OK, tStatus.getStatusCode());
         assertNotNull(tStatus.getBody());
         assertFalse(tStatus.getBody().isSuccess());
@@ -1576,7 +1585,7 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
         assertEventLogged(extLogs, TICKET_ASSIGNED_GENERATE_METADATA, online ? 12 : 10);
         assertEventLogged(extLogs, TICKET_MAIL_CUSTOM_TEXT, online ? 12 : 10);
 
-        tStatus = reservationApiV2Controller.getTransactionStatus(reservationId, StaticPaymentMethods.BANK_TRANSFER);
+        tStatus = reservationApiV2Controller.getTransactionStatus(reservationId, StaticPaymentMethods.BANK_TRANSFER.name());
         assertEquals(HttpStatus.OK, tStatus.getStatusCode());
         assertNotNull(tStatus.getBody());
         assertTrue(tStatus.getBody().isSuccess());

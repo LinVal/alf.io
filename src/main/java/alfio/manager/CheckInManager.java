@@ -218,8 +218,8 @@ public class CheckInManager {
             TicketWithCategory ticket = descriptor.getTicket();
             scanAuditRepository.insert(ticketIdentifier, eventId, ZonedDateTime.now(clockProvider.getClock()), user, SUCCESS, ScanAudit.Operation.SCAN);
             auditingRepository.insert(ticket.getTicketsReservationId(), userRepository.findIdByUserName(user).orElse(null), eventId, CHECK_IN, new Date(), Audit.EntityType.TICKET, Integer.toString(descriptor.getTicket().getId()));
-            // return also additional items, if any
-            return new SuccessfulCheckIn(ticket, getAdditionalServicesForTicket(ticket, event), loadBoxColor(ticket));
+            // return also additional items and any additional info to display.
+            return new SuccessfulCheckIn(ticket, getAdditionalServicesForTicket(ticket, event), purchaseContextFieldRepository.findValuesForTicketAtCheckIn(ticket.getId()), loadBoxColor(ticket));
         } else if(checkInStatus == BADGE_SCAN_ALREADY_DONE || checkInStatus == OK_READY_FOR_BADGE_SCAN) {
             var auditingStatus = checkInStatus == OK_READY_FOR_BADGE_SCAN ? BADGE_SCAN_SUCCESS : checkInStatus;
             scanAuditRepository.insert(ticketIdentifier, eventId, ZonedDateTime.now(clockProvider.getClock()), user, auditingStatus, ScanAudit.Operation.SCAN);
@@ -279,7 +279,7 @@ public class CheckInManager {
 
     public TicketCheckInStatusResult retrieveTicketStatus(String ticketIdentifier) {
         var ticket = ticketRepository.findByUUID(ticketIdentifier);
-        return new TicketCheckInStatusResult(ticket.getUuid(), ticket.getFirstName(), ticket.getLastName(), ticket.getStatus() == TicketStatus.CHECKED_IN ? ALREADY_CHECK_IN : OK_READY_TO_BE_CHECKED_IN);
+        return new TicketCheckInStatusResult(ticket.getUuid(), ticket.getFirstName(), ticket.getLastName(), ticket.getStatus() == TicketStatus.CHECKED_IN ? ALREADY_CHECK_IN : OK_READY_TO_BE_CHECKED_IN, ticket.getTags());
     }
 
     private TicketAndCheckInResult extractStatus(int eventId, Optional<Ticket> maybeTicket, String ticketIdentifier, Optional<String> ticketCode) {

@@ -35,6 +35,7 @@ import alfio.repository.user.OrganizationRepository;
 import alfio.repository.user.UserRepository;
 import alfio.repository.user.join.UserOrganizationRepository;
 import alfio.util.MiscUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -257,15 +258,28 @@ public class AccessService {
     public void checkEventReservationCreationRequest(Principal principal,
                                                      String eventShortName,
                                                      ReservationCreate<? extends ReservationRequest> createRequest) {
+        checkEventReservationCreationRequest(principal, eventShortName, List.of(createRequest));
+    }
+
+    public void checkEventReservationCreationRequest(Principal principal,
+                                                     String eventShortName,
+                                                     List<? extends ReservationCreate<? extends ReservationRequest>> createRequests) {
         var eventAndOrganizationId = checkEventOwnership(principal, eventShortName);
-        var categoryIds = createRequest.getTickets().stream().map(ReservationRequest::getTicketCategoryId).collect(Collectors.toSet());
+        var categoryIds = createRequests.stream()
+            .flatMap(createRequest -> createRequest.getTickets().stream())
+            .map(ReservationRequest::getTicketCategoryId)
+            .collect(Collectors.toSet());
         int eventId = eventAndOrganizationId.getId();
         if (categoryIds.size() != ticketCategoryRepository.countCategoriesBelongingToEvent(eventId, categoryIds)) {
             throw new AccessDeniedException();
         }
-        var additionalServicesIds = requireNonNullElse(createRequest.getAdditionalServices(), List.<AdditionalServiceReservationModification>of()).stream()
+
+        var additionalServicesIds = createRequests.stream()
+            .filter(createRequest -> CollectionUtils.isNotEmpty(createRequest.getAdditionalServices()))
+            .flatMap(createRequest -> createRequest.getAdditionalServices().stream())
             .map(AdditionalServiceReservationModification::getAdditionalServiceId)
             .collect(Collectors.toSet());
+
         if (!additionalServicesIds.isEmpty() && additionalServicesIds.size() != additionalServiceRepository.countAdditionalServicesBelongingToEvent(eventId, additionalServicesIds)) {
             throw new AccessDeniedException();
         }
@@ -395,6 +409,7 @@ public class AccessService {
         }
         return event;
     }
+
     public void checkSubscriptionDescriptorOwnership(Principal principal, String publicIdentifier) {
         int organizationId = subscriptionRepository.findOrganizationIdForDescriptor(UUID.fromString(publicIdentifier))
             .orElseThrow(AccessDeniedException::new);
@@ -460,13 +475,6 @@ public class AccessService {
             throw new AccessDeniedException();
         }
         checkOrganizationOwnership(principal, organizationId);
-    }
-
-    public void checkAccessToPromoCode(Principal principal, int promoCodeId, PromoCodeDiscountModification payload) {
-        int organizationId = checkAccessToPromoCodeEventOrganization(principal, payload.getEventId(), payload.getOrganizationId());
-        if (!Boolean.TRUE.equals(promoCodeDiscountRepository.checkPromoCodeExists(promoCodeId, organizationId, payload.getEventId()))) {
-            throw new AccessDeniedException();
-        }
     }
 
     public void checkAccessToPromoCode(Principal principal, int promoCodeId) {
@@ -639,6 +647,21 @@ public class AccessService {
         checkEventOwnership(principal, eventId);
         if (!additionalServiceRepository.additionalServiceExistsForEvent(additionalServiceId, eventId)) {
             log.warn("denying access to additional service {}", additionalServiceId);
+            throw new AccessDeniedException();
+        }
+    }
+
+    public void checkAccessToAdditionalField(Principal principal, PurchaseContext.PurchaseContextType purchaseContextType, String publicIdentifier, long id) {
+        checkPurchaseContextOwnership(principal, purchaseContextType, publicIdentifier);
+        int count;
+        if (purchaseContextType == PurchaseContext.PurchaseContextType.event) {
+            int eventId = eventRepository.findOptionalEventAndOrganizationIdByShortName(publicIdentifier)
+                .orElseThrow().getId();
+            count = purchaseContextFieldRepository.countMatchingAdditionalFieldsForPurchaseContext(eventId, null, Set.of(id));
+        } else {
+            count = purchaseContextFieldRepository.countMatchingAdditionalFieldsForPurchaseContext(null, UUID.fromString(publicIdentifier), Set.of(id));
+        }
+        if (count != 1) {
             throw new AccessDeniedException();
         }
     }

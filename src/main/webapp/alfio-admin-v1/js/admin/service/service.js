@@ -542,7 +542,7 @@
             }
         }
 
-        
+
         function handleHEREGeolocate(location, locService, apiKeyAndProvider, resolve, reject) {
             var apiKey = apiKeyAndProvider.keys['MAPS_HERE_API_KEY'];
             $http.get('https://geocoder.ls.hereapi.com/6.2/geocode.json', {params: {apiKey: apiKey, searchtext: location}}).then(function(res) {
@@ -752,7 +752,7 @@
         };
         return instance;
     });
-    
+
     baseServices.service("PromoCodeService", function($http, HttpErrorHandler) {
 
         function addUtfOffsetIfNecessary(promoCode) {
@@ -811,12 +811,12 @@
             downloadTickets: function(eventId, ids) {
                 return $http.post('/admin/api/check-in/'+eventId+'/tickets', ids).error(HttpErrorHandler.handle);
             },
-            
+
             getTicket: function(eventId, code) {
                 var ticketIdentifier = code.split('/')[0];
                 return $http.get('/admin/api/check-in/' + eventId + '/ticket/' + ticketIdentifier + "?qrCode=" + encodeURIComponent(code)).error(HttpErrorHandler.handle);
             },
-            
+
             checkIn: function(eventId, ticket) {
                 var ticketIdentifier = ticket.code.split('/')[0];
                 return $http['post']('/admin/api/check-in/' + eventId + '/ticket/' + ticketIdentifier, ticket).error(HttpErrorHandler.handle);
@@ -829,7 +829,7 @@
             revertCheckIn: function(ticket) {
                 return $http['post']('/admin/api/check-in/' + ticket.eventId + '/ticket/' + ticket.uuid + '/revert-check-in', ticket).error(HttpErrorHandler.handle);
             },
-            
+
             confirmPayment: function(eventId, ticket) {
                 var ticketIdentifier = ticket.code.split('/')[0];
                 return $http['post']('/admin/api/check-in/' + eventId + '/ticket/' + ticketIdentifier + '/confirm-on-site-payment').error(HttpErrorHandler.handle);
@@ -991,15 +991,24 @@
                     var fileType = files[0].type;
                     var fileName = files[0].name;
                     var fileContent = imageBase64.substring(imageBase64.indexOf('base64,') + 7);
+                    const drawImage = (image) => {
+                        const cnv = document.createElement('canvas');
+                        cnv.width = image.width;
+                        cnv.height = image.height;
+                        const canvasCtx = cnv.getContext('2d');
+                        canvasCtx.drawImage(image, 0, 0, image.width, image.height);
+                        return cnv;
+                    }
+
+                    const img = new Image();
+                    img.setAttribute('aria-hidden', 'true');
+                    img.style.position = 'absolute';
+                    img.style.top = '-10000px';
+                    img.style.left = '-10000px';
+
                     if (fileType=== 'image/svg+xml') {
-                        var img = new Image();
                         var fromSvgToPng = function(image) {
-                            var cnv = document.createElement('canvas');
-                            cnv.width = image.width;
-                            cnv.height = image.height;
-                            var canvasCtx = cnv.getContext('2d');
-                            canvasCtx.drawImage(image, 0, 0);
-                            var imgData = cnv.toDataURL('image/png');
+                            const imgData = drawImage(image).toDataURL('image/png');
                             img.remove();
                             fileType = "image/png";
                             fileName = fileName+".png";
@@ -1021,10 +1030,7 @@
                         } else {
                             img.height = 500;
                         }
-                        img.setAttribute('aria-hidden', 'true');
-                        img.style.position = 'absolute';
-                        img.style.top = '-10000px';
-                        img.style.left = '-10000px';
+
                         img.onload = function() {
                             // see FF limitation https://stackoverflow.com/a/61195034
                             // we need to set in a explicit way the size _inside_ the svg
@@ -1039,14 +1045,47 @@
                         $window.document.body.appendChild(img);
                         img.src = imageBase64;
                     } else {
-                        FileUploadService.uploadImageWithResize({file : fileContent, type : fileType, name : fileName}).then(function(res) {
-                            deferred.resolve({
-                                imageBase64: imageBase64,
-                                fileBlobId: res.data
+                        const uploadImage = (imageToUpload) => {
+                            const dataUrl = drawImage(imageToUpload).toDataURL(fileType);
+                            const resizedBase64 = dataUrl.substring(dataUrl.indexOf('base64,') + 7);
+                            FileUploadService.uploadImageWithResize({file : resizedBase64, type : fileType, name : fileName}).then(res => {
+                                deferred.resolve({
+                                    imageBase64: resizedBase64,
+                                    fileBlobId: res.data
+                                });
+                            }, err => {
+                                deferred.reject(null); // error is already notified by the NotificationService
                             });
-                        }, function(err) {
-                            deferred.reject(null); // error is already notified by the NotificationService
-                        });
+                        };
+                        img.src = imageBase64;
+                        img.onload = function() {
+
+                            const maxSize = 450;
+                            let width = img.width;
+                            let height = img.height;
+                            let resize = false;
+                            // source: https://stackoverflow.com/a/24015367
+                            if (maxSize && width > height && width > maxSize) {
+                                height *= maxSize / width;
+                                width = maxSize;
+                                resize = true;
+                            } else if (maxSize && height > maxSize) {
+                                width *= maxSize / height;
+                                height = maxSize;
+                                resize = true;
+                            }
+
+                            if (resize) {
+                                createImageBitmap(img,{ resizeWidth: width, resizeHeight: height, resizeQuality: 'high' })
+                                    .then(imageBitmap => uploadImage(imageBitmap));
+                            } else {
+                                uploadImage(img);
+                            }
+
+
+                        }
+                        $window.document.body.appendChild(img);
+
                     }
                 };
                 if (files.length <= 0) {
