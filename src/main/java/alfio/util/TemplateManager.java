@@ -179,7 +179,7 @@ public class TemplateManager {
             mv.addObject("additional-field-value", ADDITIONAL_FIELD_VALUE.apply(model.get(ADDITIONAL_FIELDS_KEY)));
             mv.addObject("print-additional-fields", MustacheCustomTag.PRINT_ADDITIONAL_FIELDS.apply(model.get(ADDITIONAL_FIELDS_KEY), descriptionSupplier));
             mv.addObject("metadata-value", ADDITIONAL_FIELD_VALUE.apply(model.get(METADATA_ATTRIBUTES_KEY)));
-            mv.addObject("i18n", new CustomLocalizationMessageInterceptor(locale, messageSource).createTranslator());
+            mv.addObject("i18n", new CustomLocalizationMessageInterceptor(locale, messageSource).createTranslator(templateOutput));
             mv.addObject("discountCodeDescription", messageSource.getMessage("show-event.promo-code-type." + (usePartnerCode ? "partner" : "promotional"), null, locale));
             mv.addObject("subscriptionDescription", MustacheCustomTag.subscriptionDescriptionGenerator(messageSource, model, locale));
             var updatedModel = mv.getModel();
@@ -251,13 +251,19 @@ public class TemplateManager {
             this.messageSource = messageSource;
         }
 
-        protected Mustache.Lambda createTranslator() {
+        protected Mustache.Lambda createTranslator(TemplateOutput templateOutput) {
             return (frag, out) -> {
                 String template = frag.execute();
                 final String key = extractKey(template);
                 final List<String> args = extractParameters(template);
                 final String text = messageSource.getMessage(key, args.toArray(), locale);
-                out.write(text);
+                // Strip HTML tags in text mode to prevent them appearing literally in plain-text emails
+                // when admins have customized i18n messages using HTML
+                if (templateOutput == TemplateOutput.TEXT) {
+                    out.write(text.replaceAll("<[^>]*>", ""));
+                } else {
+                    out.write(text);
+                }
             };
         }
     }
