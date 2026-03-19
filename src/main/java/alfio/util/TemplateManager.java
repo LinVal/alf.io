@@ -111,8 +111,8 @@ public class TemplateManager {
         enrichedModel.put(MAIL_FOOTER, mailFooter.getValueOrNull());
     	var isMultipart = templateResource.isMultipart();
     	
-        var textRender = render(new ClassPathResource(templateResource.classPath()), enrichedModel, locale, purchaseContext, isMultipart ? TemplateOutput.TEXT : templateResource.getTemplateOutput());
-        
+        var textRender = stripHtmlFromTextPart(render(new ClassPathResource(templateResource.classPath()), enrichedModel, locale, purchaseContext, isMultipart ? TemplateOutput.TEXT : templateResource.getTemplateOutput()));
+
         boolean htmlEnabled = options.get(ConfigurationKeys.ENABLE_HTML_EMAILS).getValueAsBooleanOrDefault();
 
         String htmlRender = null;
@@ -127,7 +127,13 @@ public class TemplateManager {
     public RenderedTemplate renderTemplate(PurchaseContext purchaseContext, TemplateResource templateResource, Map<String, Object> model, Locale locale) {
         Map<String, Object> updatedModel = modelEnricher(model, purchaseContext, locale);
         return uploadedResourceManager.findCascading(purchaseContext.getOrganizationId(), purchaseContext.event().map(Event::getId).orElse(null), templateResource.getSavedName(locale))
-            .map(resource -> RenderedTemplate.plaintext(render(new ByteArrayResource(templateResource.replaceTokens(resource)), updatedModel, locale, purchaseContext, templateResource.getTemplateOutput()), model))
+            .map(resource -> {
+                var rendered = render(new ByteArrayResource(templateResource.replaceTokens(resource)), updatedModel, locale, purchaseContext, templateResource.getTemplateOutput());
+                if (templateResource.getTemplateOutput() == TemplateOutput.TEXT) {
+                    rendered = stripHtmlFromTextPart(rendered);
+                }
+                return RenderedTemplate.plaintext(rendered, model);
+            })
             .orElseGet(() -> renderMultipartTemplate(purchaseContext, templateResource, updatedModel, locale));
     }
 
@@ -196,6 +202,15 @@ public class TemplateManager {
             log.error("TemplateManager: got exception while generating a template", e);
             throw new IllegalStateException(e);
         }
+    }
+
+    /**
+     * Strips HTML tags from the plain-text part of an email.
+     * This handles cases where HTML is present in saved templates, i18n message overrides,
+     * or custom text fields — preventing raw HTML from appearing in plain-text email clients.
+     */
+    private static String stripHtmlFromTextPart(String text) {
+        return text.replaceAll("<[^>]*>", "");
     }
 
     private Template compile(Resource resource, TemplateOutput templateOutput) {
