@@ -196,13 +196,15 @@ public class IndexController {
     @GetMapping("/event/{eventShortName}/reservation/{reservationId}")
     public String redirectEventToReservation(@PathVariable(value = EVENT_SHORT_NAME) String eventShortName,
                                              @PathVariable String reservationId,
-                                             @RequestParam(value = "subscription", required = false) String subscriptionId) {
+                                             @RequestParam(value = "subscription", required = false) String subscriptionId,
+                                             @RequestParam(value = "lang", required = false) String lang) {
         if (eventRepository.existsByShortName(eventShortName)) {
             var reservationStatusUrlSegment = ticketReservationRepository.findOptionalStatusAndValidationById(reservationId)
                 .map(IndexController::reservationStatusToUrlMapping).orElse(NOT_FOUND);
             return REDIRECT + UriComponentsBuilder.fromPath("/event/{eventShortName}/reservation/{reservationId}/{status}")
                 // if subscription param is present, we forward it to the reservation resource
                 .queryParamIfPresent("subscription", Optional.ofNullable(StringUtils.trimToNull(subscriptionId)))
+                .queryParamIfPresent("lang", Optional.ofNullable(StringUtils.trimToNull(lang)))
                 .buildAndExpand(Map.of(EVENT_SHORT_NAME, eventShortName, "reservationId", reservationId, "status",reservationStatusUrlSegment))
                 .toUriString();
         } else {
@@ -211,12 +213,15 @@ public class IndexController {
     }
 
     @GetMapping("/subscription/{subscriptionId}/reservation/{reservationId}")
-    public String redirectSubscriptionToReservation(@PathVariable String subscriptionId, @PathVariable String reservationId) {
+    public String redirectSubscriptionToReservation(@PathVariable String subscriptionId,
+                                                    @PathVariable String reservationId,
+                                                    @RequestParam(value = "lang", required = false) String lang) {
         if (subscriptionRepository.existsById(UUID.fromString(subscriptionId))) {
             var reservationStatusUrlSegment = ticketReservationRepository.findOptionalStatusAndValidationById(reservationId)
                 .map(IndexController::reservationStatusToUrlMapping).orElse(NOT_FOUND);
 
             return REDIRECT + UriComponentsBuilder.fromPath("/subscription/{subscriptionId}/reservation/{reservationId}/{status}")
+                .queryParamIfPresent("lang", Optional.ofNullable(StringUtils.trimToNull(lang)))
                 .buildAndExpand(Map.of("subscriptionId", subscriptionId, "reservationId", reservationId, "status",reservationStatusUrlSegment))
                 .toUriString();
         } else {
@@ -229,6 +234,7 @@ public class IndexController {
             case PENDING -> Boolean.TRUE.equals(status.getValidated()) ? "overview" : "book";
             case COMPLETE, FINALIZING -> "success";
             case OFFLINE_PAYMENT, OFFLINE_FINALIZING -> "waiting-payment";
+            case CUSTOM_OFFLINE_PAYMENT -> "waiting-custom-payment";
             case DEFERRED_OFFLINE_PAYMENT -> "deferred-payment";
             case EXTERNAL_PROCESSING_PAYMENT, WAITING_EXTERNAL_CONFIRMATION -> "processing-payment";
             case IN_PAYMENT, STUCK -> "error";

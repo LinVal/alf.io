@@ -25,9 +25,8 @@ public final class CategoryEvaluator {
     private CategoryEvaluator() {
     }
 
-    public static Function<Ticket, Boolean> ticketCancellationAvailabilityChecker(TicketCategoryRepository ticketCategoryRepository) {
-        return ticket -> ticket.getStatus() == Ticket.TicketStatus.ACQUIRED && (!ticketCategoryRepository.getByIdAndActive(ticket.getCategoryId(), ticket.getEventId()).isAccessRestricted()
-                         || ticketCategoryRepository.countUnboundedCategoriesByEventId(ticket.getEventId()) > 0);
+    public static Function<Ticket, Boolean> ticketCancellationAvailabilityChecker(@SuppressWarnings("unused") TicketCategoryRepository ticketCategoryRepository) {
+        return ticket -> ticket.getStatus() == Ticket.TicketStatus.ACQUIRED;
     }
 
     public static boolean isTicketCancellationAvailable(TicketCategoryRepository ticketCategoryRepository, Ticket ticket) {

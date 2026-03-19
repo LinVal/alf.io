@@ -150,8 +150,9 @@ export class SuccessComponent implements OnInit {
 
   releaseTicket(ticket: Ticket) {
     this.ticketService.openReleaseTicket(ticket, this.event.shortName)
-      .subscribe(released => {
-        if (released) {
+      .subscribe({
+        next: released => {
+          if (released) {
             const singleTicket = this.reservationInfo.ticketsByCategory.map((c) => c.tickets.length).reduce((c1, c2) => c1 + c2) === 1;
             if (singleTicket) {
               this.router.navigate(['event', this.event.shortName], {replaceUrl: true});
@@ -159,7 +160,9 @@ export class SuccessComponent implements OnInit {
               this.loadReservation();
             }
           }
-        });
+        },
+        error: () => {} // modal dismissed without action
+      });
   }
 
   get ticketFormVisible(): boolean {

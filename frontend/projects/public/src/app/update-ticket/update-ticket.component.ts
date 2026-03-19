@@ -88,10 +88,13 @@ export class UpdateTicketComponent implements OnInit {
 
   releaseTicket() {
     this.ticketService.openReleaseTicket(this.ticket, this.event.shortName)
-      .subscribe(released => {
-        if (released) {
-          this.router.navigate(['event', this.event.shortName], {replaceUrl: true});
-        }
+      .subscribe({
+        next: released => {
+          if (released) {
+            this.router.navigate(['event', this.event.shortName], {replaceUrl: true});
+          }
+        },
+        error: () => {} // modal dismissed without action
       });
   }
 
