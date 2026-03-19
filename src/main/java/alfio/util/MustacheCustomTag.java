@@ -313,7 +313,10 @@ public class MustacheCustomTag {
     }
 
     public static String renderToTextCommonmark(String input) {
-        Node document = COMMONMARK_PARSER.parse(input);
+        // Strip HTML tags to prevent them from appearing literally in plain-text emails
+        // when admins use HTML in their custom email body fields
+        String stripped = input.replaceAll("<[^>]*>", "");
+        Node document = COMMONMARK_PARSER.parse(stripped);
         return COMMONMARK_TEXT_RENDERER.render(document);
     }
 }
