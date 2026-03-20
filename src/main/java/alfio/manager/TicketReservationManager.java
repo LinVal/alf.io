@@ -1569,16 +1569,6 @@ public class TicketReservationManager {
                 new Object[]{event.getDisplayName()}, locale),
         		() -> templateManager.renderTemplate(event, TemplateResource.TICKET_HAS_BEEN_CANCELLED, model, locale));
 
-        String ticketCategoryDescription = ticketCategoryDescriptionRepository.findByTicketCategoryIdAndLocale(category.getId(), ticket.getUserLanguage()).orElse("");
-
-        List<AdditionalServiceItem> additionalServiceItems = additionalServiceManager.findItemsInReservation(event.getId(), reservationId);
-        if (configurationManager.isNotifyOrganizerOnReservationEnabled(event)) {
-            Map<String, Object> adminModel = TemplateResource.buildModelForTicketHasBeenCancelledAdmin(organization, event, ticket,
-                ticketCategoryDescription, additionalServiceItems, asi -> additionalServiceManager.loadItemTitle(asi, locale));
-            notificationManager.sendSimpleEmail(event, null, organization.getEmail(), messageSource.getMessage("email-ticket-released.admin.subject", new Object[]{ticket.getId(), event.getDisplayName()}, locale),
-                    () -> templateManager.renderTemplate(event, TemplateResource.TICKET_HAS_BEEN_CANCELLED_ADMIN, adminModel, locale));
-        }
-
         int deletedValues = purchaseContextFieldRepository.deleteAllValuesForTicket(ticket.getId());
         log.debug("deleting {} field values for ticket {}", deletedValues, ticket.getId());
 
