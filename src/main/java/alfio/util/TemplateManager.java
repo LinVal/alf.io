@@ -110,8 +110,9 @@ public class TemplateManager {
         enrichedModel.put("hasMailFooter", mailFooter.isPresent());
         enrichedModel.put(MAIL_FOOTER, mailFooter.getValueOrNull());
     	var isMultipart = templateResource.isMultipart();
-    	
-        var textRender = stripHtmlFromTextPart(render(new ClassPathResource(templateResource.classPath()), enrichedModel, locale, purchaseContext, isMultipart ? TemplateOutput.TEXT : templateResource.getTemplateOutput()));
+    	var effectiveOutput = isMultipart ? TemplateOutput.TEXT : templateResource.getTemplateOutput();
+        var rawRender = render(new ClassPathResource(templateResource.classPath()), enrichedModel, locale, purchaseContext, effectiveOutput);
+        var textRender = effectiveOutput == TemplateOutput.TEXT ? stripHtmlFromTextPart(rawRender) : rawRender;
 
         boolean htmlEnabled = options.get(ConfigurationKeys.ENABLE_HTML_EMAILS).getValueAsBooleanOrDefault();
 
