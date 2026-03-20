@@ -1,0 +1,10 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+      <fa-icon [icon]="['fas', 'check-circle']" size="4x" class="text-success mb-4" a11yRole="presentation"></fa-icon>
+      <h2 class="mb-3">{{ 'ticket-cancelled.title' | translate }}</h2>
+      <p class="mb-4">{{ 'ticket-cancelled.description' | translate }}</p>
+      <button class="btn btn-primary" (click)="goToEvents()">{{ 'ticket-cancelled.back-to-events' | translate }}</button>
+    </div>
+  </div>
+</div>

@@ -91,7 +91,7 @@ export class UpdateTicketComponent implements OnInit {
       .subscribe({
         next: released => {
           if (released) {
-            this.router.navigate(['event', this.event.shortName], {replaceUrl: true});
+            this.router.navigate(['ticket-cancelled'], {replaceUrl: true});
           }
         },
         error: () => {} // modal dismissed without action

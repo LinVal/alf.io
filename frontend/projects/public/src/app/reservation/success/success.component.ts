@@ -155,7 +155,7 @@ export class SuccessComponent implements OnInit {
           if (released) {
             const singleTicket = this.reservationInfo.ticketsByCategory.map((c) => c.tickets.length).reduce((c1, c2) => c1 + c2) === 1;
             if (singleTicket) {
-              this.router.navigate(['event', this.event.shortName], {replaceUrl: true});
+              this.router.navigate(['ticket-cancelled'], {replaceUrl: true});
             } else {
               this.loadReservation();
             }

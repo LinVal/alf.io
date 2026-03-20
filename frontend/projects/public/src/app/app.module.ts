@@ -139,6 +139,7 @@ import {HeaderInformationRetriever} from "./header-information-retriever";
 import {ChallengeComponent} from "./challenge/challenge.component";
 import {TurnstileChallengeComponent} from "./challenge/turnstile/turnstile-challenge.component";
 import {ChallengeCodeInterceptor} from "./challenge/challenge.interceptor";
+import {TicketCancelledComponent} from './ticket-cancelled/ticket-cancelled.component';
 
 
 // AoT requires an exported function for factories
@@ -213,7 +214,8 @@ export function InitUserService(userService: UserService): () => Promise<boolean
         TranslateDescriptionPipe,
         AdditionalServiceFormComponent,
         ChallengeComponent,
-        TurnstileChallengeComponent
+        TurnstileChallengeComponent,
+        TicketCancelledComponent
     ],
     imports: [
         BrowserModule,

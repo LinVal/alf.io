@@ -27,6 +27,7 @@ import {MyOrdersComponent} from './my-orders/my-orders.component';
 import {MyProfileComponent} from './my-profile/my-profile.component';
 import {UserLoggedInGuard} from './user-logged-in.guard';
 import {WaitingRoomComponent} from './waiting-room/waiting-room.component';
+import {TicketCancelledComponent} from './ticket-cancelled/ticket-cancelled.component';
 
 const detectLanguage: CanActivateFn = (route, state) => {
   return inject(LanguageGuard).canActivate(route, state);
@@ -89,7 +90,8 @@ const routes: Routes = [
     { path: 'check-in/:ticketCodeHash/waiting-room', component: WaitingRoomComponent, canActivate: [fetchEvent, detectLanguage] }
   ]},
   { path: 'my-orders', component: MyOrdersComponent, canActivate: [userLoggedIn, removeEventCss, detectLanguage] },
-  { path: 'my-profile', component: MyProfileComponent, canActivate: [userLoggedIn, removeEventCss, detectLanguage] }
+  { path: 'my-profile', component: MyProfileComponent, canActivate: [userLoggedIn, removeEventCss, detectLanguage] },
+  { path: 'ticket-cancelled', component: TicketCancelledComponent, canActivate: [removeEventCss, detectLanguage] }
 ];
 
 @NgModule({
