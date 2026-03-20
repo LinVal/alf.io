@@ -36,10 +36,14 @@ import alfio.repository.TicketCategoryDescriptionRepository;
 import alfio.repository.TicketCategoryRepository;
 import alfio.util.ClockProvider;
 import alfio.util.EventUtil;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Predicate;
@@ -52,6 +56,10 @@ import static java.util.stream.Collectors.toList;
 @Component
 @Transactional(readOnly = true)
 public class TicketCategoryAvailabilityManager {
+
+    private final Cache<String, Optional<ItemsByCategory>> categoriesCache = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofSeconds(5))
+        .build();
 
     private final TicketCategoryRepository ticketCategoryRepository;
     private final EventRepository eventRepository;
@@ -80,6 +88,17 @@ public class TicketCategoryAvailabilityManager {
     }
 
     public Optional<ItemsByCategory> getTicketCategories(String eventName, String code) {
+        if (StringUtils.isBlank(code)) {
+            return categoriesCache.get(eventName, this::loadTicketCategories);
+        }
+        return loadTicketCategories(eventName, code);
+    }
+
+    private Optional<ItemsByCategory> loadTicketCategories(String eventName) {
+        return loadTicketCategories(eventName, null);
+    }
+
+    private Optional<ItemsByCategory> loadTicketCategories(String eventName, String code) {
         return eventRepository.findOptionalByShortName(eventName).filter(e -> e.getStatus() != Event.Status.DISABLED).map(event -> {
             var configurations = configurationManager.getFor(List.of(
                 DISPLAY_TICKETS_LEFT_INDICATOR, MAX_AMOUNT_OF_TICKETS_BY_RESERVATION, DISPLAY_EXPIRED_CATEGORIES,
