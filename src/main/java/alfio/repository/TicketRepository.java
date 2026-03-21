@@ -137,10 +137,11 @@ public interface TicketRepository {
                             )
                         ) 
                         from ticket_category tc
-                        where tc.event_id = :eventId 
+                        where tc.event_id = :eventId
                         and tc.bounded = true
                         and tc.tc_status = 'ACTIVE'
                         and tc.expiration > now()
+                        and tc.access_restricted = false
                     ), 0
                 ) +
                 -- Also add any dynamic allocation from unbounded categories
