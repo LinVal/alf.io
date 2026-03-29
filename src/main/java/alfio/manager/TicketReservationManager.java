@@ -53,6 +53,7 @@ import alfio.model.subscription.*;
 import alfio.model.system.command.CleanupReservations;
 import alfio.model.system.command.FinalizeReservation;
 import alfio.model.system.command.InvalidateAccess;
+import alfio.model.system.command.TicketReserved;
 import alfio.model.transaction.*;
 import alfio.model.transaction.capabilities.OfflineProcessor;
 import alfio.model.transaction.capabilities.ServerInitiatedTransaction;
@@ -350,6 +351,7 @@ public class TicketReservationManager {
             retrievePublicUserId(principal));
 
         list.forEach(t -> reserveTicketsForCategory(event, reservationId, t, locale, forWaitingQueue, discount.orElse(null), dynamicDiscount.orElse(null)));
+        applicationEventPublisher.publishEvent(new TicketReserved(event.getShortName()));
 
         // add all additional services
         additionalServiceManager.bookAdditionalServicesForReservation(event, reservationId, additionalServices, discount);

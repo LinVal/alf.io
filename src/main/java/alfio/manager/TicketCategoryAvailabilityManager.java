@@ -35,11 +35,13 @@ import alfio.repository.PromoCodeDiscountRepository;
 import alfio.repository.TicketCategoryDescriptionRepository;
 import alfio.repository.TicketCategoryRepository;
 import alfio.util.ClockProvider;
+import alfio.model.system.command.TicketReserved;
 import alfio.util.EventUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +87,11 @@ public class TicketCategoryAvailabilityManager {
         this.additionalServiceManager = additionalServiceManager;
         this.ticketCategoryDescriptionRepository = ticketCategoryDescriptionRepository;
         this.eventStatisticsManager = eventStatisticsManager;
+    }
+
+    @EventListener
+    public void onTicketReserved(TicketReserved event) {
+        categoriesCache.invalidate(event.eventName());
     }
 
     public Optional<ItemsByCategory> getTicketCategories(String eventName, String code) {

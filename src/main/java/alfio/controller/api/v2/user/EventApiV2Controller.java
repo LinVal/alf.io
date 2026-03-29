@@ -197,7 +197,11 @@ public class EventApiV2Controller {
 
         //
         return ticketCategoryAvailabilityManager
-            .getTicketCategories(eventName, code).map(i -> new ResponseEntity<>(i, getCorsHeaders(), HttpStatus.OK))
+            .getTicketCategories(eventName, code).map(i -> {
+                var headers = getCorsHeaders();
+                headers.setCacheControl("no-store");
+                return new ResponseEntity<>(i, headers, HttpStatus.OK);
+            })
             .orElseGet(() -> ResponseEntity.notFound().headers(getCorsHeaders()).build());
     }
 
