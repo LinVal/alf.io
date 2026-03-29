@@ -137,7 +137,7 @@ class RetryConfirmationFlowIntegrationTest extends BaseReservationFlowTest {
 
         // check that the IndexController is redirecting properly
         var shortName = context.event.getShortName();
-        var redirect = indexController.redirectEventToReservation(shortName, reservationId, null);
+        var redirect = indexController.redirectEventToReservation(shortName, reservationId, null, null);
         assertEquals("redirect:/event/"+shortName+"/reservation/"+reservationId+"/success", redirect);
 
         var reservation = ticketReservationRepository.findReservationById(reservationId);

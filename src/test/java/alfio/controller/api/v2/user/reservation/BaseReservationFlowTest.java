@@ -191,6 +191,8 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
     protected ExportManager exportManager;
     @Autowired
     protected PurchaseContextFieldManager purchaseContextFieldManager;
+    @Autowired
+    protected TicketCategoryAvailabilityManager ticketCategoryAvailabilityManager;
 
     private Integer additionalServiceId;
 
@@ -462,6 +464,7 @@ public abstract class BaseReservationFlowTest extends BaseIntegrationTest {
             // fix dates to enable reservation list
             var tc = ticketCategoryRepository.getById(visibleCat.getId());
             ticketCategoryRepository.fixDates(visibleCat.getId(), tc.getInception(context.event.getZoneId()).plusDays(2), tc.getExpiration(context.event.getZoneId()));
+            ticketCategoryAvailabilityManager.invalidateCache(context.event.getShortName());
             //
             items = eventApiV2Controller.getTicketCategories(context.event.getShortName(), null).getBody();
             assertNotNull(items);

@@ -94,6 +94,10 @@ public class TicketCategoryAvailabilityManager {
         categoriesCache.invalidate(event.eventName());
     }
 
+    public void invalidateCache(String eventName) {
+        categoriesCache.invalidate(eventName);
+    }
+
     public Optional<ItemsByCategory> getTicketCategories(String eventName, String code) {
         if (StringUtils.isBlank(code)) {
             return categoriesCache.get(eventName, this::loadTicketCategories);
