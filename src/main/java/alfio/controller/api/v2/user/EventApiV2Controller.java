@@ -142,7 +142,7 @@ public class EventApiV2Controller {
                 var earliestInception = ticketCategoryRepository.findEarliestFutureInception(e.getId());
                 boolean preSales = earliestInception.isPresent();
                 Map<String, String> formattedSaleInceptionDate = preSales
-                    ? Formatters.getFormattedDate(e, earliestInception.get(), "common.ticket-category.date-format", messageSource)
+                    ? Formatters.getFormattedDate(e, earliestInception.get().withZoneSameInstant(e.getZoneId()), "common.ticket-category.date-format", messageSource)
                     : null;
 
                 return new BasicEventInfo(
