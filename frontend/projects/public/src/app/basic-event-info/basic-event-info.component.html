@@ -3,6 +3,7 @@
     <div class="flex-grow-1">
       <h2 class="card-title mb-1 fs-5">{{title}}</h2>
       <div style="min-height: 1.5rem;">
+        <span *ngIf="isAvailable" class="badge bg-success">{{'event-list.available' | translate}}</span>
         <span *ngIf="!isPreSales && availableTickets > 0" class="badge bg-warning text-dark">{{ availableTickets }} {{'event-list.tickets-left' | translate}}</span>
         <span *ngIf="isSoldOut" class="badge bg-danger">{{'show-event.sold-out' | translate}}</span>
       </div>

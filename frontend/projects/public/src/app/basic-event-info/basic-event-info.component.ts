@@ -22,8 +22,8 @@ export class BasicEventInfoComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  public get availableTickets(): number {
-    return this.event.availableTicketsCount ?? 0;
+  public get availableTickets(): number | null {
+    return this.event.availableTicketsCount ?? null;
   }
 
   public get isPreSales(): boolean {
@@ -32,6 +32,10 @@ export class BasicEventInfoComponent implements OnInit {
 
   public get isSoldOut(): boolean {
     return !this.isPreSales && this.availableTickets === 0;
+  }
+
+  public get isAvailable(): boolean {
+    return !this.isPreSales && this.availableTickets === null;
   }
 
   public get saleInceptionDate(): string {
