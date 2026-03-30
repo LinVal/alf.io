@@ -47,8 +47,8 @@ export class AdditionalServiceComponent implements OnInit, OnDestroy {
     if (availableQuantity === 0 || this.additionalService.saleInFuture || this.additionalService.expired) {
       this.availableForSale = false;
     } else if (this.additionalService.supplementPolicy === 'OPTIONAL_MAX_AMOUNT_PER_TICKET') {
-      this.formSub = this.form.get('reservation').valueChanges.subscribe(valueChange => {
-        const selectedTicketCount = (valueChange as {amount: string}[]).map(a => parseInt(a.amount, 10)).reduce((sum, n) => sum + n, 0);
+      const calcValues = (valueChange: {amount: string}[]) => {
+        const selectedTicketCount = valueChange.map(a => parseInt(a.amount, 10)).reduce((sum, n) => sum + n, 0);
         const maxPerOrder = selectedTicketCount * this.additionalService.maxQtyPerOrder;
         const rangeEnd = availableQuantity >= 0 ? Math.min(maxPerOrder, availableQuantity) : maxPerOrder;
         const res = [];
@@ -56,7 +56,9 @@ export class AdditionalServiceComponent implements OnInit, OnDestroy {
           res.push(i);
         }
         this.validSelectionValues = res;
-      });
+      };
+      calcValues(this.form.get('reservation').value);
+      this.formSub = this.form.get('reservation').valueChanges.subscribe(calcValues);
     } else if (this.additionalService.supplementPolicy === 'OPTIONAL_MAX_AMOUNT_PER_RESERVATION' ||
                 this.additionalService.supplementPolicy === null) {
       const res = [];
