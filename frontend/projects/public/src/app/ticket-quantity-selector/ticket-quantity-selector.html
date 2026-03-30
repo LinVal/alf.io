@@ -12,12 +12,14 @@
           <span class="fw-bold" translate="show-event.all-tickets-reserved"></span>
       } @else if (category.soldOutOrLimitReached) {
           <span class="fw-bold" translate="show-event.sold-out"></span>
+      } @else if (category.saleInFuture) {
+          <span class="fw-bold">{{ 'show-event.sale-in-future' | translate: {'0': category.formattedInception[translate.currentLang]} }}</span>
       } @else {
           <span class="fw-bold" translate="show-event.not-available"></span>
       }
 
-      @if (category.containsPendingTickets || !category.soldOutOrLimitReached) {
-          <button type="button" class="btn btn-sm btn-default" (click)="refreshCategories()">
+      @if (!category.saleInFuture && (category.containsPendingTickets || !category.soldOutOrLimitReached)) {
+          <button type="button" class="btn btn-sm btn-default" (click)="refreshCategories()" [disabled]="refreshInProgress || refreshCooldown">
               <fa-icon [icon]="['fas', 'redo-alt']" [animation]="refreshInProgress ? 'spin' : undefined"></fa-icon> {{'common.refresh' | translate}}
           </button>
       }

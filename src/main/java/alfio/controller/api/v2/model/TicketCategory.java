@@ -43,6 +43,7 @@ public class TicketCategory {
     //
     private final boolean expired;
     private final boolean saleInFuture;
+    private final long inceptionTimestamp;
     private final boolean containsPendingTickets;
     private final Map<String, String> formattedInception;
     private final Map<String, String> formattedExpiration;
@@ -74,6 +75,7 @@ public class TicketCategory {
         //
         this.expired = saleableTicketCategory.getExpired();
         this.saleInFuture = saleableTicketCategory.getSaleInFuture();
+        this.inceptionTimestamp = saleableTicketCategory.getZonedInception().toInstant().toEpochMilli();
         this.containsPendingTickets = saleableTicketCategory.hasPendingTickets();
         this.formattedInception = formattedInception;
         this.formattedExpiration = formattedExpiration;

@@ -66,6 +66,7 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
 
   submitInProgress: boolean = false;
   refreshInProgress: boolean = false;
+  private saleInFutureInterval?: ReturnType<typeof setInterval>;
 
   // https://alligator.io/angular/reactive-forms-formarray-dynamic-fields/
 
@@ -131,6 +132,7 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
       this.subscription?.unsubscribe();
       this.promoCodeSubscription?.unsubscribe(); //Added for #1437
+      this.stopSaleInFuturePolling();
   }
 
   private applyItemsByCat(itemsByCat: ItemsByCategory) {
@@ -151,6 +153,12 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
     this.preSales = itemsByCat.preSales;
     this.waitingList = itemsByCat.waitingList;
     this.ticketCategoriesForWaitingList = itemsByCat.ticketCategoriesForWaitingList;
+
+    if (this.ticketCategories.some(tc => tc.saleInFuture)) {
+      this.startSaleInFuturePolling();
+    } else {
+      this.stopSaleInFuturePolling();
+    }
 
     this.createWaitingListFormIfNecessary();
   }
@@ -336,13 +344,34 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
     this.refreshDebouncer.next(null);
   }
 
-  private doRefreshCategories() {
+  private doRefreshCategories(showFeedback = true) {
+    if (this.refreshInProgress) {
+      return;
+    }
     this.refreshInProgress = true;
     this.eventService.getEventTicketsInfo(this.event.shortName)
         .subscribe(itemsByCat => {
             this.applyItemsByCat(itemsByCat);
-            this.feedbackService.showSuccess('show-event.category-refresh.complete');
+            if (showFeedback) {
+              this.feedbackService.showSuccess('show-event.category-refresh.complete');
+            }
             this.refreshInProgress = false;
         })
+  }
+
+  private startSaleInFuturePolling(): void {
+    if (this.saleInFutureInterval) {
+      return;
+    }
+    this.saleInFutureInterval = setInterval(() => {
+      this.doRefreshCategories(false);
+    }, 10000);
+  }
+
+  private stopSaleInFuturePolling(): void {
+    if (this.saleInFutureInterval) {
+      clearInterval(this.saleInFutureInterval);
+      this.saleInFutureInterval = undefined;
+    }
   }
 }

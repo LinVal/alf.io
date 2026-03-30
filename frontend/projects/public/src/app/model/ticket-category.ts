@@ -16,6 +16,7 @@ export interface TicketCategory {
     //
     expired: boolean;
     saleInFuture: boolean;
+    inceptionTimestamp: number;
     formattedInception: {[key: string]: string};
     formattedExpiration: {[key: string]: string};
     //
