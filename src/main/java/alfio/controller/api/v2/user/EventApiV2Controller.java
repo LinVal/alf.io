@@ -120,17 +120,21 @@ public class EventApiV2Controller {
 
     @GetMapping("events")
     public ResponseEntity<List<BasicEventInfo>> listEvents(SearchOptions searchOptions) {
+        var cacheKey = searchOptions.getOrganizerSlug() != null ? searchOptions.getOrganizerSlug() : "all";
+        var events = ticketCategoryAvailabilityManager.getCachedEventList(cacheKey, k -> buildEventList(searchOptions));
+        var headers = getCorsHeaders();
+        headers.setCacheControl("no-store");
+        return new ResponseEntity<>(events, headers, HttpStatus.OK);
+    }
 
-        // Hämta alla tillgängliga språk
+    private List<BasicEventInfo> buildEventList(SearchOptions searchOptions) {
         var contentLanguages = i18nManager.getAvailableLanguages();
-
-        var events = eventManager.getPublishedEvents(searchOptions)
+        return eventManager.getPublishedEvents(searchOptions)
             .stream()
             .map(e -> {
                 var messageSource = messageSourceManager.getMessageSourceFor(e);
                 var formattedDates = Formatters.getFormattedDates(e, messageSource, contentLanguages);
 
-                // Biljettindikator
                 var configurationsValues = configurationManager.getFor(
                     List.of(DISPLAY_TICKETS_LEFT_INDICATOR), e.getConfigurationLevel()
                 );
@@ -166,14 +170,11 @@ public class EventApiV2Controller {
                     formattedSaleInceptionDate
                 );
             })
-            // Sortera internationellt på första titelvärdet i Map
             .sorted(Comparator.comparing(
                 e -> e.getTitle().values().stream().findFirst().orElse(""),
                 String.CASE_INSENSITIVE_ORDER
             ))
             .collect(Collectors.toList());
-
-        return new ResponseEntity<>(events, getCorsHeaders(), HttpStatus.OK);
     }
 
     @GetMapping("event/{eventName}")

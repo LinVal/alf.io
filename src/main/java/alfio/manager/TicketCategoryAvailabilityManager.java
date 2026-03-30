@@ -63,6 +63,10 @@ public class TicketCategoryAvailabilityManager {
         .expireAfterWrite(Duration.ofSeconds(5))
         .build();
 
+    private final Cache<String, List<?>> eventListCache = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofSeconds(5))
+        .build();
+
     private final TicketCategoryRepository ticketCategoryRepository;
     private final EventRepository eventRepository;
     private final ConfigurationManager configurationManager;
@@ -92,10 +96,17 @@ public class TicketCategoryAvailabilityManager {
     @EventListener
     public void onTicketReserved(TicketReserved event) {
         categoriesCache.invalidate(event.eventName());
+        eventListCache.invalidateAll();
     }
 
     public void invalidateCache(String eventName) {
         categoriesCache.invalidate(eventName);
+        eventListCache.invalidateAll();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getCachedEventList(String cacheKey, java.util.function.Function<String, List<T>> loader) {
+        return (List<T>) eventListCache.get(cacheKey, k -> loader.apply(k));
     }
 
     public Optional<ItemsByCategory> getTicketCategories(String eventName, String code) {
