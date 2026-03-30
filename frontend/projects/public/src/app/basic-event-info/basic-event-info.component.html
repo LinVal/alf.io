@@ -10,7 +10,6 @@
       <fa-icon [icon]="['fas', 'map-marker-alt']"></fa-icon> &nbsp; {{event.location}}
     </div>
     <div class="mt-2">
-      <span *ngIf="isPreSales" class="badge bg-success">{{'show-event.sales-not-started' | translate: {'0': saleInceptionDate} }}</span>
       <span *ngIf="!isPreSales && availableTickets > 0" class="badge bg-warning text-dark">{{ availableTickets }} {{'event-list.tickets-left' | translate}}</span>
       <span *ngIf="isSoldOut" class="badge bg-danger">{{'show-event.sold-out' | translate}}</span>
     </div>
