@@ -152,12 +152,12 @@
 
 
 
-      <div *ngIf="!preSales && supplementCategories && supplementCategories.length > 0" class="mt-5">
+      <div *ngIf="supplementCategories && supplementCategories.length > 0" class="mt-5">
         <h2 translate="show-event.additional-services"></h2>
         <app-additional-service *ngFor="let supplement of supplementCategories" [form]="reservationForm" [additionalService]="supplement" [event]="event"></app-additional-service>
       </div>
 
-      <div *ngIf="!preSales && donationCategories && donationCategories.length > 0" class="mt-5">
+      <div *ngIf="donationCategories && donationCategories.length > 0" class="mt-5">
           <h2 translate="show-event.donations"></h2>
           <app-additional-service *ngFor="let donation of donationCategories" [form]="reservationForm" [additionalService]="donation" [event]="event"></app-additional-service>
       </div>
