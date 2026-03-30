@@ -16,21 +16,31 @@ export class BasicEventInfoComponent implements OnInit {
 
   @Input()
   params: Params;
-  
-  @Input()
-  ticketsLeft?: number;
 
   constructor(private translateService: TranslateService) { }
 
   ngOnInit(): void {
   }
 
-  // Helper method to ensure we're always getting a numeric value
-  public getTicketsLeft(): number {
-    if (this.ticketsLeft !== undefined && this.ticketsLeft !== null) {
-      return Number(this.ticketsLeft);
+  public get availableTickets(): number {
+    return this.event.availableTicketsCount ?? 0;
+  }
+
+  public get isPreSales(): boolean {
+    return !!this.event.preSales;
+  }
+
+  public get isSoldOut(): boolean {
+    return !this.isPreSales && this.availableTickets === 0;
+  }
+
+  public get saleInceptionDate(): string {
+    if (this.event.formattedSaleInceptionDate) {
+      return this.event.formattedSaleInceptionDate[this.translateService.currentLang]
+        || Object.values(this.event.formattedSaleInceptionDate)[0]
+        || '';
     }
-    return 0;
+    return '';
   }
 
   public get isEventOnline(): boolean {

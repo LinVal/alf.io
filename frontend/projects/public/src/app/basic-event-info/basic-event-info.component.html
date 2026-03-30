@@ -10,15 +10,17 @@
       <fa-icon [icon]="['fas', 'map-marker-alt']"></fa-icon> &nbsp; {{event.location}}
     </div>
     <div class="mt-2">
-      <span *ngIf="getTicketsLeft() > 0" class="badge bg-success">{{ getTicketsLeft() }} {{'event-list.tickets-left' | translate}}</span>
-      <span *ngIf="getTicketsLeft() === 0" class="badge bg-danger">{{'show-event.sold-out' | translate}}</span>
+      <span *ngIf="isPreSales" class="badge bg-success">{{'show-event.sales-not-started' | translate: {'0': saleInceptionDate} }}</span>
+      <span *ngIf="!isPreSales && availableTickets > 0" class="badge bg-warning text-dark">{{ availableTickets }} {{'event-list.tickets-left' | translate}}</span>
+      <span *ngIf="isSoldOut" class="badge bg-danger">{{'show-event.sold-out' | translate}}</span>
     </div>
   </div>
   <div class="card-footer border-top-0 bg-white">
     <div class="d-flex justify-content-end">
-      <a [routerLink]="['/event', event.shortName]" [queryParams]="params" class="btn stretched-link" [ngClass]="{'btn-success': getTicketsLeft() > 0, 'btn-secondary': getTicketsLeft() === 0}">
-        <span *ngIf="getTicketsLeft() > 0">{{'event-list.link' | translate}}</span>
-        <span *ngIf="getTicketsLeft() === 0">{{'show-event.sold-out.subscribe' | translate}}</span>
+      <a [routerLink]="['/event', event.shortName]" [queryParams]="params" class="btn stretched-link"
+         [ngClass]="{'btn-success': !isSoldOut, 'btn-secondary': isSoldOut}">
+        <span *ngIf="!isSoldOut">{{'event-list.link' | translate}}</span>
+        <span *ngIf="isSoldOut">{{'event-list.sold-out' | translate}}</span>
         <span class="sr-only"> {{title}}</span>
       </a>
     </div>

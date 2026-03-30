@@ -41,21 +41,24 @@ public class BasicEventInfo implements DateValidity {
     private final Map<String, String> formattedEndTime;
     private final List<Language> contentLanguages;
     private final Integer availableTicketsCount;
-    
+    private final boolean preSales;
+    private final Map<String, String> formattedSaleInceptionDate;
+
     public BasicEventInfo(String shortName, String fileBlobId, Map<String, String> title, EventFormat format, String location,
-                         String timeZone, DatesWithTimeZoneOffset datesWithOffset, boolean sameDay, 
+                         String timeZone, DatesWithTimeZoneOffset datesWithOffset, boolean sameDay,
                          Map<String, String> formattedBeginDate, Map<String, String> formattedBeginTime,
                          Map<String, String> formattedEndDate, Map<String, String> formattedEndTime,
                          List<Language> contentLanguages) {
-        this(shortName, fileBlobId, title, format, location, timeZone, datesWithOffset, sameDay, 
-             formattedBeginDate, formattedBeginTime, formattedEndDate, formattedEndTime, contentLanguages, null);
+        this(shortName, fileBlobId, title, format, location, timeZone, datesWithOffset, sameDay,
+             formattedBeginDate, formattedBeginTime, formattedEndDate, formattedEndTime, contentLanguages, null, false, null);
     }
-    
+
     public BasicEventInfo(String shortName, String fileBlobId, Map<String, String> title, EventFormat format, String location,
-                         String timeZone, DatesWithTimeZoneOffset datesWithOffset, boolean sameDay, 
+                         String timeZone, DatesWithTimeZoneOffset datesWithOffset, boolean sameDay,
                          Map<String, String> formattedBeginDate, Map<String, String> formattedBeginTime,
                          Map<String, String> formattedEndDate, Map<String, String> formattedEndTime,
-                         List<Language> contentLanguages, Integer availableTicketsCount) {
+                         List<Language> contentLanguages, Integer availableTicketsCount,
+                         boolean preSales, Map<String, String> formattedSaleInceptionDate) {
         this.shortName = shortName;
         this.fileBlobId = fileBlobId;
         this.title = title;
@@ -70,5 +73,7 @@ public class BasicEventInfo implements DateValidity {
         this.formattedEndTime = formattedEndTime;
         this.contentLanguages = contentLanguages;
         this.availableTicketsCount = availableTicketsCount;
+        this.preSales = preSales;
+        this.formattedSaleInceptionDate = formattedSaleInceptionDate;
     }
 }

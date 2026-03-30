@@ -98,6 +98,9 @@ public interface TicketCategoryRepository {
     @Query("select * from ticket_category_with_currency where event_id = :eventId  and tc_status = 'ACTIVE' order by ordinal asc, inception asc, expiration asc, id asc")
     List<TicketCategory> findAllTicketCategories(@Bind("eventId") int eventId);
 
+    @Query("select min(inception) from ticket_category where event_id = :eventId and tc_status = 'ACTIVE' and inception > now() and expiration > now() and access_restricted = false")
+    Optional<ZonedDateTime> findEarliestFutureInception(@Bind("eventId") int eventId);
+
     @Query(FIND_ALL_AVAILABLE + " limit 1")
     Optional<TicketCategory> findFirstWithAvailableTickets(@Bind("eventId") int eventId);
 

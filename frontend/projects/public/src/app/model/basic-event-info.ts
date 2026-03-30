@@ -21,5 +21,7 @@ export class BasicEventInfo implements DateValidity, Localized {
   contentLanguages: Language[] = [];
   
   // ticket availability
-  availableTicketsCount?: number; // This should always be a number
+  availableTicketsCount?: number;
+  preSales?: boolean;
+  formattedSaleInceptionDate?: {[key: string]: string};
 }

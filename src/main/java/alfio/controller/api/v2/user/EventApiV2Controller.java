@@ -139,6 +139,12 @@ public class EventApiV2Controller {
                     availableTicketsCount = ticketRepository.countFreeTicketsForPublicStatistics(e.getId());
                 }
 
+                var earliestInception = ticketCategoryRepository.findEarliestFutureInception(e.getId());
+                boolean preSales = earliestInception.isPresent();
+                Map<String, String> formattedSaleInceptionDate = preSales
+                    ? Formatters.getFormattedDate(e, earliestInception.get(), "common.ticket-category.date-format", messageSource)
+                    : null;
+
                 return new BasicEventInfo(
                     e.getShortName(),
                     e.getFileBlobId(),
@@ -155,7 +161,9 @@ public class EventApiV2Controller {
                     contentLanguages.stream()
                         .map(cl -> new Language(cl.locale().getLanguage(), cl.getDisplayLanguage()))
                         .collect(Collectors.toList()),
-                    availableTicketsCount
+                    availableTicketsCount,
+                    preSales,
+                    formattedSaleInceptionDate
                 );
             })
             // Sortera internationellt på första titelvärdet i Map
