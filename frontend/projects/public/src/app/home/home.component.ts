@@ -258,6 +258,10 @@ export class HomeComponent implements OnInit, OnDestroy {
            this.ticketCategories.every(tc => !tc.bounded);
   }
 
+  get firstEvent(): BasicEventInfo | null {
+    return this.events?.length > 0 ? this.events[0] : null;
+  }
+
   get preSaleDate(): string | null {
     const event = this.events.find(e => e.preSales && e.formattedSaleInceptionDate);
     if (!event) return null;

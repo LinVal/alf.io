@@ -3,14 +3,20 @@
     <app-topbar [contentLanguages]="languages"></app-topbar>
 
     <div *ngIf="containsEvents || !containsSubscriptions" class="mb-2">
-      <h1 translate="event-list.title"></h1>
-      <div *ngIf="preSaleDate" class="alert alert-info mt-2 mb-0" role="status">
+      <div class="text-center mb-3">
+        <img *ngIf="firstEvent" [src]="'/file/'+firstEvent.fileBlobId" class="img-fluid mb-3" style="max-height:150px" alt="" aria-hidden="true" role="presentation">
+        <h1 translate="event-list.title"></h1>
+        <div class="text-body-secondary mt-2" *ngIf="firstEvent?.location">
+          <fa-icon [icon]="['fas', 'map-marker-alt']"></fa-icon>&nbsp;{{firstEvent.location}}
+        </div>
+      </div>
+      <div *ngIf="preSaleDate" class="alert alert-info text-center fs-5 mt-2 mb-3" role="status">
         {{'show-event.sales-not-started' | translate: {'0': preSaleDate} }}
       </div>
 
       <div class="row justify-content-center mb-3 mt-3">
         <div class="col-md-6" *ngFor="let event of events">
-          <app-basic-event-info [event]="event" [ticketsLeft]="getActualTicketCount(event)"></app-basic-event-info>
+          <app-basic-event-info [event]="event"></app-basic-event-info>
         </div>
       </div>
       <!-- Knappen för att visa alla events har tagits bort eftersom alla events visas direkt -->
