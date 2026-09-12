@@ -474,7 +474,7 @@ public class TicketReservationManager {
                 ticketRepository.reserveTicket(reservationId,
                     ticketId,
                     sp.getId(),
-                    locale.getLanguage(),
+                    Objects.requireNonNullElseGet(StringUtils.trimToNull(attendee.getUserLanguage()), locale::getLanguage),
                     category.getSrcPriceCts(),
                     category.getCurrencyCode(),
                     event.getVatStatus(),
@@ -1790,7 +1790,10 @@ public class TicketReservationManager {
         }
         var transactionPayload = optionalTransactionWebhookPayload.get();
 
-        var optionalReservation = ticketReservationRepository.findOptionalReservationById(transactionPayload.getReservationId());
+        // lock the reservation row before the transaction row: every flow accessing both
+        // (initTransaction, performPayment, cancelPendingPayment) acquires them in this order,
+        // and a different order here would result in a deadlock under concurrent access
+        var optionalReservation = ticketReservationRepository.findOptionalReservationByIdForUpdate(transactionPayload.getReservationId());
         if(optionalReservation.isEmpty()) {
             return PaymentWebhookResult.notRelevant("reservation not found");
         }
@@ -1895,16 +1898,23 @@ public class TicketReservationManager {
     }
 
     public Optional<PaymentResult> forceTransactionCheck(PurchaseContext purchaseContext, TicketReservation reservation) {
-        var optionalTransaction = transactionRepository.loadOptionalByReservationIdAndStatusForUpdate(reservation.getId(), Transaction.Status.PENDING);
+        // #1524 lock the reservation row before the transaction row, in order to keep the lock acquisition order consistent
+        // across all payment flows and avoid deadlocks
+        var optionalLockedReservation = ticketReservationRepository.findOptionalReservationByIdForUpdate(reservation.getId());
+        if(optionalLockedReservation.isEmpty()) {
+            return Optional.empty();
+        }
+        var lockedReservation = optionalLockedReservation.get();
+        var optionalTransaction = transactionRepository.loadOptionalByReservationIdAndStatusForUpdate(lockedReservation.getId(), Transaction.Status.PENDING);
         if(optionalTransaction.isEmpty()) {
             return Optional.empty();
         }
         var transaction = optionalTransaction.get();
-        PaymentContext paymentContext = new PaymentContext(purchaseContext, reservation.getId());
-        return checkTransactionStatus(purchaseContext, reservation)
+        PaymentContext paymentContext = new PaymentContext(purchaseContext, lockedReservation.getId());
+        return checkTransactionStatus(purchaseContext, lockedReservation)
             .map(providerAndWebhookResult -> {
                 var paymentWebhookResult = providerAndWebhookResult.getRight();
-                handlePaymentWebhookResult(purchaseContext, providerAndWebhookResult.getLeft(), paymentWebhookResult, reservation, transaction, paymentContext, "force-check", true);
+                handlePaymentWebhookResult(purchaseContext, providerAndWebhookResult.getLeft(), paymentWebhookResult, lockedReservation, transaction, paymentContext, "force-check", true);
 
                 return switch (paymentWebhookResult.getType()) {
                     case FAILED, REJECTED, CANCELLED -> PaymentResult.failed(paymentWebhookResult.getReason());
@@ -1983,7 +1993,12 @@ public class TicketReservationManager {
             return Optional.of(provider.errorToken(errorMessage, false));
         }
         var transactionToken = provider.initTransaction(paymentSpecification, params);
-        if(transitionToExternalProcessingPayment(reservation)) {
+        if(transactionToken.getErrorMessage() != null && transactionToken.isReservationStatusChanged()) {
+            // #1524: the payment provider has detected a remote status change (e.g. the payment has already succeeded).
+            // Reconcile through the standard transaction check, so that a successful payment
+            // confirms both transaction and reservation without having to wait for the webhook
+            forceTransactionCheck(purchaseContext, reservation);
+        } else if(transitionToExternalProcessingPayment(reservation)) {
            auditingRepository.insert(reservationId, null, purchaseContext, INIT_PAYMENT, new Date(), RESERVATION, reservationId);
         }
         return Optional.of(transactionToken);
@@ -2084,7 +2099,7 @@ public class TicketReservationManager {
         log.trace("check offline payments for event {}", event.getShortName());
         var paymentContext = new PaymentContext(event);
         var providers = paymentManager.streamActiveProvidersByProxyAndCapabilities(PaymentProxy.OFFLINE, paymentContext, List.of(OfflineProcessor.class))
-            .collect(toList());
+            .toList();
         if(providers.isEmpty()) {
             log.trace("No active offline provider has been found. Exiting...");
             return;

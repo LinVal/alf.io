@@ -24,6 +24,7 @@ The open source ticket reservation system.
     <li><a href="#check-dependencies-to-update">Check dependencies to update</a></li>
     <li><a href="#running-docker-containers">Running Docker containers</a></li>
     <li><a href="#contributors">Contributors</a></li>
+    <li><a href="#sponsors">Sponsors</a></li>
 
   </ol>
 </details>
@@ -97,7 +98,7 @@ Add a new line with: `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,addr
 
 
 ## Contributing to alf.io
-Importing the Gradle project into Intellij and Eclipse both work.
+Importing the Gradle project into IntelliJ and Eclipse both work.
 
 **Notes**:
 - this project uses [Project Lombok](https://projectlombok.org/). You will need to install the corresponding Lombok plugin for integration into your IDE.
@@ -215,13 +216,14 @@ translations completed but not yet integrated (WIP)
 | Japanese (jp) | Martin      |    | |
 | Chinese (Taiwan) (cn_TW) | Yu-cheng, Lin      |    | |
 
-### Sponsors
+## Sponsors
 
 This project is sponsored by:
 
 <a href="https://swicket.io" target="_blank">
-  <img alt="Swicket" src="https://swicket.io/logo-web.png" width="200">
+  <img alt="Swicket" src="https://swicket.io/assets/logo-white-bg.png" width="200">
 </a><br/>
+<hr>
 <a href="https://www.browserstack.com/open-source" target="_blank"><img alt="Powered by BrowserStack" src="https://user-images.githubusercontent.com/2320747/150974875-769c7085-f8bf-49b8-aff9-b650231300eb.jpg" width="200"/> Open Source program</a>
 <br><br>
 <img alt="Exteso" src="https://alf.io/img/logos/exteso_logo.jpg" width="150"> &nbsp;
