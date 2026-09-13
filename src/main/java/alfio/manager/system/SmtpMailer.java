@@ -70,15 +70,19 @@ class SmtpMailer extends BaseMailer {
 
             message.setSubject(subject);
 
-            var encodedFromName = MimeUtility.encodeText(fromName, UTF_8.name(), "Q");
-
             var fromAddress = new InternetAddress(
-                encodedFromName + " <" + conf.get(SMTP_FROM_EMAIL).getRequiredValue() + ">"
+                conf.get(SMTP_FROM_EMAIL).getRequiredValue(),
+                fromName,
+                UTF_8.name()
             );
 
-            mimeMessage.setFrom(fromAddress);
+            System.out.println("DEBUG address: " + fromAddress.getAddress());
+            System.out.println("DEBUG personal: " + fromAddress.getPersonal());
+            System.out.println("DEBUG toString: " + fromAddress);
 
+            mimeMessage.setFrom(fromAddress);
             mimeMessage.saveChanges();
+
             System.out.println("DEBUG SMTP From: " + mimeMessage.getHeader("From", null));
 
             //message.setFrom(conf.get(SMTP_FROM_EMAIL).getRequiredValue(), fromName);
