@@ -75,12 +75,7 @@ class SmtpMailer extends BaseMailer {
                 fromName,
                 UTF_8.name()
             );
-
             mimeMessage.setHeader("From", fromAddress.toString());
-
-            mimeMessage.saveChanges();
-
-            System.out.println("DEBUG SMTP From: " + mimeMessage.getHeader("From", null));
 
             setReplyToIfPresent(conf, configurable.getOrganizationId(), replyTo -> {
                 try {
@@ -89,6 +84,7 @@ class SmtpMailer extends BaseMailer {
                     throw new RuntimeException(e);
                 }
             });
+
             message.setTo(to);
             if(cc != null && !cc.isEmpty()){
                 message.setCc(cc.toArray(new String[0]));
