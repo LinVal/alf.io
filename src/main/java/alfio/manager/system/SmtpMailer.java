@@ -19,6 +19,7 @@ package alfio.manager.system;
 import alfio.model.Configurable;
 import alfio.model.system.ConfigurationKeys;
 import alfio.repository.user.OrganizationRepository;
+import jakarta.mail.internet.InternetAddress;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,10 +67,12 @@ class SmtpMailer extends BaseMailer {
             MimeMessageHelper message = html.isPresent() || !ArrayUtils.isEmpty(attachments) ? new MimeMessageHelper(mimeMessage, true, UTF_8.name())
                     : new MimeMessageHelper(mimeMessage, UTF_8.name());
             message.setSubject(subject);
-            message.setFrom(
+            var fromAddress = new InternetAddress(
                 conf.get(SMTP_FROM_EMAIL).getRequiredValue(),
-                "Gubbangens Barnkladesbyte 2026 Hosten"
+                fromName,
+                UTF_8.name()
             );
+            mimeMessage.setFrom(fromAddress);
             //message.setFrom(conf.get(SMTP_FROM_EMAIL).getRequiredValue(), fromName);
             setReplyToIfPresent(conf, configurable.getOrganizationId(), replyTo -> {
                 try {
