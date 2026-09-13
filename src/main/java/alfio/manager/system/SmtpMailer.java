@@ -76,16 +76,12 @@ class SmtpMailer extends BaseMailer {
                 UTF_8.name()
             );
 
-            System.out.println("DEBUG address: " + fromAddress.getAddress());
-            System.out.println("DEBUG personal: " + fromAddress.getPersonal());
-            System.out.println("DEBUG toString: " + fromAddress);
+            mimeMessage.setHeader("From", fromAddress.toString());
 
-            mimeMessage.setFrom(fromAddress);
             mimeMessage.saveChanges();
 
             System.out.println("DEBUG SMTP From: " + mimeMessage.getHeader("From", null));
 
-            //message.setFrom(conf.get(SMTP_FROM_EMAIL).getRequiredValue(), fromName);
             setReplyToIfPresent(conf, configurable.getOrganizationId(), replyTo -> {
                 try {
                     message.setReplyTo(replyTo);
