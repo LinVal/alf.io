@@ -66,7 +66,10 @@ class SmtpMailer extends BaseMailer {
             MimeMessageHelper message = html.isPresent() || !ArrayUtils.isEmpty(attachments) ? new MimeMessageHelper(mimeMessage, true, UTF_8.name())
                     : new MimeMessageHelper(mimeMessage, UTF_8.name());
             message.setSubject(subject);
-            message.setFrom(conf.get(SMTP_FROM_EMAIL).getRequiredValue());
+            message.setFrom(
+                conf.get(SMTP_FROM_EMAIL).getRequiredValue(),
+                "Gubbangens Barnkladesbyte 2026 Hosten"
+            );
             //message.setFrom(conf.get(SMTP_FROM_EMAIL).getRequiredValue(), fromName);
             setReplyToIfPresent(conf, configurable.getOrganizationId(), replyTo -> {
                 try {
