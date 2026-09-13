@@ -20,6 +20,7 @@ import alfio.model.Configurable;
 import alfio.model.system.ConfigurationKeys;
 import alfio.repository.user.OrganizationRepository;
 import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeUtility;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +67,15 @@ class SmtpMailer extends BaseMailer {
 
             MimeMessageHelper message = html.isPresent() || !ArrayUtils.isEmpty(attachments) ? new MimeMessageHelper(mimeMessage, true, UTF_8.name())
                     : new MimeMessageHelper(mimeMessage, UTF_8.name());
+
             message.setSubject(subject);
+
+            var encodedFromName = MimeUtility.encodeText(fromName, UTF_8.name(), "Q");
+
             var fromAddress = new InternetAddress(
-                conf.get(SMTP_FROM_EMAIL).getRequiredValue(),
-                fromName,
-                UTF_8.name()
+                encodedFromName + " <" + conf.get(SMTP_FROM_EMAIL).getRequiredValue() + ">"
             );
+
             mimeMessage.setFrom(fromAddress);
 
             mimeMessage.saveChanges();
