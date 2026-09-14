@@ -25,6 +25,8 @@ public final class CategoryEvaluator {
     private CategoryEvaluator() {
     }
 
+
+
     public static Function<Ticket, Boolean> ticketCancellationAvailabilityChecker(
         TicketCategoryRepository ticketCategoryRepository) {
 

@@ -91,12 +91,45 @@ public class BookingInfoTicketLoader {
                                                  boolean onlineEventStarted,
                                                  Set<PurchaseContextFieldConfiguration.Context> contexts) {
         // TODO: n+1, should be cleaned up! see TicketDecorator.getCancellationEnabled
-        var configuration = configurationManager.getFor(EnumSet.of(ALLOW_FREE_TICKETS_CANCELLATION, SEND_TICKETS_AUTOMATICALLY, ALLOW_TICKET_DOWNLOAD), ConfigurationLevel.ticketCategory(event, t.getCategoryId()));
-        boolean cancellationEnabled = t.getFinalPriceCts() == 0 &&
-            !event.expired() &&
-            (!hasPaidSupplement && configuration.get(ALLOW_FREE_TICKETS_CANCELLATION).getValueAsBooleanOrDefault()) && // freeCancellationEnabled
-            eventManager.checkTicketCancellationPrerequisites().apply(t); // cancellationPrerequisitesMet
-        //
+        var configuration = configurationManager.getFor(
+            EnumSet.of(
+                ALLOW_FREE_TICKETS_CANCELLATION,
+                SEND_TICKETS_AUTOMATICALLY,
+                ALLOW_TICKET_DOWNLOAD
+            ),
+            ConfigurationLevel.ticketCategory(event, t.getCategoryId())
+        );
+
+        boolean freeTicket = t.getFinalPriceCts() == 0;
+        boolean eventNotExpired = !event.expired();
+        boolean freeCancellationEnabled =
+            configuration.get(ALLOW_FREE_TICKETS_CANCELLATION)
+                .getValueAsBooleanOrDefault();
+
+        boolean cancellationPrerequisite =
+            eventManager.checkTicketCancellationPrerequisites().apply(t);
+
+        boolean cancellationEnabled =
+            freeTicket
+                && eventNotExpired
+                && !hasPaidSupplement
+                && freeCancellationEnabled
+                && cancellationPrerequisite;
+
+        System.out.println(
+            "DEBUG cancellation"
+                + " ticket=" + t.getId()
+                + " category=" + t.getCategoryId()
+                + " status=" + t.getStatus()
+                + " price=" + t.getFinalPriceCts()
+                + " freeTicket=" + freeTicket
+                + " eventNotExpired=" + eventNotExpired
+                + " hasPaidSupplement=" + hasPaidSupplement
+                + " freeCancellationEnabled=" + freeCancellationEnabled
+                + " prerequisite=" + cancellationPrerequisite
+                + " cancellationEnabled=" + cancellationEnabled
+        );
+
         return toBookingInfoTicket(t,
             cancellationEnabled,
             configuration.get(SEND_TICKETS_AUTOMATICALLY).getValueAsBooleanOrDefault(),
