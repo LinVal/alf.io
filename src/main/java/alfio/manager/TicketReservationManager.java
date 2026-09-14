@@ -1559,8 +1559,13 @@ public class TicketReservationManager {
         //#365 - reset UUID when releasing a ticket
         int result = ticketRepository.releaseTicket(reservationId, UUID.randomUUID().toString(), UUID.randomUUID(), event.getId(), ticket.getId());
         Validate.isTrue(result == 1, "Expected 1 row to be updated, got %d".formatted(result));
-        if(category.isAccessRestricted() || !category.isBounded()) {
-            ticketRepository.unbindTicketsFromCategory(event.getId(), category.getId(), singletonList(ticket.getId()));
+
+        if(!category.isBounded()) {
+            ticketRepository.unbindTicketsFromCategory(
+                event.getId(),
+                category.getId(),
+                singletonList(ticket.getId())
+            );
         }
         Organization organization = organizationRepository.getById(event.getOrganizationId());
         Map<String, Object> model = TemplateResource.buildModelForTicketHasBeenCancelled(organization, event, ticket);

@@ -769,30 +769,99 @@ class TicketReservationManagerTest {
     }
 
     @Test
-    void cannotReleaseRestrictedTicketIfNoUnboundedCategory() {
+    void releaseBoundedRestrictedTicketWithoutUnbindingCategory() {
         initReleaseTicket();
-        when(ticketCategoryRepository.getByIdAndActive(eq(TICKET_CATEGORY_ID), eq(EVENT_ID))).thenReturn(ticketCategory);
-        when(ticketCategoryRepository.countUnboundedCategoriesByEventId(eq(EVENT_ID))).thenReturn(0);
+
         when(ticketCategory.isAccessRestricted()).thenReturn(true);
-        assertThrows(IllegalStateException.class, () -> trm.releaseTicket(event, ticketReservation, ticket));
-        verify(ticketCategoryRepository).countUnboundedCategoriesByEventId(eq(EVENT_ID));
+        when(ticketCategory.isBounded()).thenReturn(true);
+        when(ticketCategoryRepository.countUnboundedCategoriesByEventId(eq(EVENT_ID))).thenReturn(0);
+
+        when(ticketRepository.releaseTicket(
+            eq(RESERVATION_ID),
+            anyString(),
+            any(UUID.class),
+            eq(EVENT_ID),
+            eq(TICKET_ID)
+        )).thenReturn(1);
+
+        List<String> expectedReservations = singletonList(RESERVATION_ID);
+        when(ticketReservationRepository.remove(eq(expectedReservations))).thenReturn(1);
+        when(transactionRepository.loadOptionalByReservationId(anyString())).thenReturn(Optional.empty());
+
+        trm.releaseTicket(event, ticketReservation, ticket);
+
+        verify(ticketRepository).releaseTicket(
+            eq(RESERVATION_ID),
+            anyString(),
+            any(UUID.class),
+            eq(EVENT_ID),
+            eq(TICKET_ID)
+        );
+
+        verify(ticketRepository, never()).unbindTicketsFromCategory(
+            eq(EVENT_ID),
+            eq(TICKET_CATEGORY_ID),
+            eq(singletonList(TICKET_ID))
+        );
+
+        verify(notificationManager).sendSimpleEmail(
+            eq(event),
+            eq(RESERVATION_ID),
+            eq(RESERVATION_EMAIL),
+            any(),
+            any(TemplateGenerator.class)
+        );
+
+        verify(organizationRepository).getById(eq(ORGANIZATION_ID));
+        verify(ticketReservationRepository).remove(eq(expectedReservations));
     }
 
     @Test
     void releaseRestrictedTicketIfUnboundedCategoryPresent() {
         initReleaseTicket();
+
         when(ticketCategory.getId()).thenReturn(TICKET_CATEGORY_ID);
-        when(ticketRepository.releaseTicket(eq(RESERVATION_ID), anyString(), any(UUID.class), eq(EVENT_ID), eq(TICKET_ID))).thenReturn(1);
-        when(ticketCategoryRepository.getByIdAndActive(eq(TICKET_CATEGORY_ID), eq(EVENT_ID))).thenReturn(ticketCategory);
         when(ticketCategory.isAccessRestricted()).thenReturn(true);
+        when(ticketCategory.isBounded()).thenReturn(false);
+
+        when(ticketRepository.releaseTicket(
+            eq(RESERVATION_ID),
+            anyString(),
+            any(UUID.class),
+            eq(EVENT_ID),
+            eq(TICKET_ID)
+        )).thenReturn(1);
+
         when(ticketCategoryRepository.countUnboundedCategoriesByEventId(eq(EVENT_ID))).thenReturn(1);
+
         List<String> expectedReservations = singletonList(RESERVATION_ID);
         when(ticketReservationRepository.remove(eq(expectedReservations))).thenReturn(1);
         when(transactionRepository.loadOptionalByReservationId(anyString())).thenReturn(Optional.empty());
+
         trm.releaseTicket(event, ticketReservation, ticket);
-        verify(ticketRepository).releaseTicket(eq(RESERVATION_ID), anyString(), any(UUID.class), eq(EVENT_ID), eq(TICKET_ID));
-        verify(ticketRepository).unbindTicketsFromCategory(eq(EVENT_ID), eq(TICKET_CATEGORY_ID), eq(singletonList(TICKET_ID)));
-        verify(notificationManager).sendSimpleEmail(eq(event), eq(RESERVATION_ID), eq(RESERVATION_EMAIL), any(), any(TemplateGenerator.class));
+
+        verify(ticketRepository).releaseTicket(
+            eq(RESERVATION_ID),
+            anyString(),
+            any(UUID.class),
+            eq(EVENT_ID),
+            eq(TICKET_ID)
+        );
+
+        verify(ticketRepository).unbindTicketsFromCategory(
+            eq(EVENT_ID),
+            eq(TICKET_CATEGORY_ID),
+            eq(singletonList(TICKET_ID))
+        );
+
+        verify(notificationManager).sendSimpleEmail(
+            eq(event),
+            eq(RESERVATION_ID),
+            eq(RESERVATION_EMAIL),
+            any(),
+            any(TemplateGenerator.class)
+        );
+
         verify(organizationRepository).getById(eq(ORGANIZATION_ID));
         verify(ticketReservationRepository).remove(eq(expectedReservations));
     }

@@ -40,7 +40,7 @@ public class CategoryEvaluatorTest {
         ticket = mock(Ticket.class);
         category = mock(TicketCategory.class);
         tcr = mock(TicketCategoryRepository.class);
-        
+
         int categoryId = 1;
         when(ticket.getCategoryId()).thenReturn(categoryId);
         when(ticket.getEventId()).thenReturn(eventId);
@@ -51,27 +51,52 @@ public class CategoryEvaluatorTest {
     @Test
     public void allowTicketCancellationIfItBelongsToAPublicCategory() {
         when(category.isAccessRestricted()).thenReturn(false);
-        Assertions.assertTrue(CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket));
+
+        Assertions.assertTrue(
+            CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket)
+        );
     }
 
     @Test
-    public void doNotAllowCancellationIfCategoryAllBounded() {
+    public void allowCancellationOnBoundedRestrictedCategory() {
         when(category.isAccessRestricted()).thenReturn(true);
+        when(category.isBounded()).thenReturn(true);
         when(tcr.countUnboundedCategoriesByEventId(eq(eventId))).thenReturn(0);
-        Assertions.assertFalse(CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket));
+
+        Assertions.assertTrue(
+            CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket)
+        );
     }
 
     @Test
-    public void allowCancellationOnRestrictedCategoryIfAtLeastOneBounded() {
+    public void allowCancellationOnRestrictedCategoryIfAtLeastOneUnboundedCategoryExists() {
         when(category.isAccessRestricted()).thenReturn(true);
+        when(category.isBounded()).thenReturn(false);
         when(tcr.countUnboundedCategoriesByEventId(eq(eventId))).thenReturn(1);
-        Assertions.assertTrue(CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket));
+
+        Assertions.assertTrue(
+            CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket)
+        );
+    }
+
+    @Test
+    public void doNotAllowCancellationOnUnboundedRestrictedCategoryIfNoUnboundedCategoryExists() {
+        when(category.isAccessRestricted()).thenReturn(true);
+        when(category.isBounded()).thenReturn(false);
+        when(tcr.countUnboundedCategoriesByEventId(eq(eventId))).thenReturn(0);
+
+        Assertions.assertFalse(
+            CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket)
+        );
     }
 
     @Test
     public void doNotAllowCancellationIfTicketStatusIsNotAcquired() {
         when(category.isAccessRestricted()).thenReturn(false);
         when(ticket.getStatus()).thenReturn(Ticket.TicketStatus.CHECKED_IN);
-        Assertions.assertFalse(CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket));
+
+        Assertions.assertFalse(
+            CategoryEvaluator.isTicketCancellationAvailable(tcr, ticket)
+        );
     }
 }
