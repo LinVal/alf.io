@@ -46,17 +46,40 @@ export class AdditionalServiceComponent implements OnInit, OnDestroy {
     const availableQuantity = this.additionalService.availableQuantity ?? 999;
     if (availableQuantity === 0 || this.additionalService.saleInFuture || this.additionalService.expired) {
       this.availableForSale = false;
-    } else if (this.additionalService.supplementPolicy === 'OPTIONAL_MAX_AMOUNT_PER_TICKET') {
-      this.formSub = this.form.get('reservation').valueChanges.subscribe(valueChange => {
-        const selectedTicketCount = (valueChange as {amount: string}[]).map(a => parseInt(a.amount, 10)).reduce((sum, n) => sum + n, 0);
-        const maxPerOrder = selectedTicketCount * this.additionalService.maxQtyPerOrder;
-        const rangeEnd = availableQuantity >= 0 ? Math.min(maxPerOrder, availableQuantity) : maxPerOrder;
-        const res = [];
-        for (let i = 0; i <= rangeEnd; i++) {
-          res.push(i);
-        }
-        this.validSelectionValues = res;
-      });
+  } else if (this.additionalService.supplementPolicy === 'OPTIONAL_MAX_AMOUNT_PER_TICKET') {
+
+    const updateValidSelectionValues = (): void => {
+      const reservation = this.form.get('reservation') as UntypedFormArray;
+
+      const selectedTicketCount = reservation.controls
+        .map(control => Number(control.get('amount').value) || 0)
+        .reduce((sum, n) => sum + n, 0);
+
+      const maxPerOrder =
+        selectedTicketCount * this.additionalService.maxQtyPerOrder;
+
+      const rangeEnd =
+        availableQuantity >= 0
+          ? Math.min(maxPerOrder, availableQuantity)
+          : maxPerOrder;
+
+      const res = [];
+
+      for (let i = 0; i <= rangeEnd; i++) {
+        res.push(i);
+      }
+
+      this.validSelectionValues = res;
+    };
+
+    // Calculate immediately using the already selected shopping time.
+    updateValidSelectionValues();
+
+    // Recalculate if the shopping-time quantity changes later.
+    this.formSub = this.form
+      .get('reservation')
+      .valueChanges
+      .subscribe(() => updateValidSelectionValues());
     } else if (this.additionalService.supplementPolicy === 'OPTIONAL_MAX_AMOUNT_PER_RESERVATION' ||
                 this.additionalService.supplementPolicy === null) {
       const res = [];

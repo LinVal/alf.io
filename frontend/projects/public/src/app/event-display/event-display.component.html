@@ -107,7 +107,7 @@
               [additionalClass]="
                 (category.accessRestricted ? 'ticket-category-restricted border-warning shadow-sm ' : '') +
                 (isCategoryDisabled(category.id) ? 'shopping-time-disabled ' : 'shopping-time-available ')
-          ">
+            ">
           <span class="item-title">
             {{category.name}}
           </span>
@@ -115,12 +115,15 @@
             <span *ngIf="displayOnlineTicketTag(category)" class="badge text-bg-success">{{'event.online.badge' | translate}}</span>
             <span class="badge text-bg-warning" [class.ms-2]="displayOnlineTicketTag(category)" *ngIf="ticketsLeftCountVisibleForCategory(category)">{{"show-event.tickets.left" | translate: {'0': category.availableTickets} }}</span>
           </div>
-          <div class="item-price">
-            <span *ngIf="category.free" translate="common.free"></span>
-            <span *ngIf="!category.free">
-              <app-price-tag [purchaseContext]="event" [formattedPrice]="category.formattedFinalPrice" [showTaxDetails]="category.displayTaxInformation" [discountedPrice]="category.formattedDiscountedPrice" [showDiscount]="category.hasDiscount"></app-price-tag>
-            </span>
-          </div>
+              <div class="item-price" *ngIf="!category.free">
+                  <app-price-tag
+                      [purchaseContext]="event"
+                      [formattedPrice]="category.formattedFinalPrice"
+                      [showTaxDetails]="category.displayTaxInformation"
+                      [discountedPrice]="category.formattedDiscountedPrice"
+                      [showDiscount]="category.hasDiscount">
+                  </app-price-tag>
+              </div>
           <div class="item-qty-selector">
               <app-ticket-quantity-selector
                   [parentGroup]="reservationFormItem(reservationForm, counter)"

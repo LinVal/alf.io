@@ -1,10 +1,8 @@
 <div [formGroup]="additionalServiceFormGroup">
   <app-item-card [currentLang]="translate.currentLang" [item]="additionalService" [parentFormGroup]="additionalServiceFormGroup">
     <span class="item-title">{{additionalService.title[translate.currentLang]}}</span>
-    <div class="item-price">
-        @if (additionalService.free) {
-          <span translate="common.free"></span>
-        } @else if (!additionalService.free && additionalService.fixPrice) {
+      <div class="item-price">
+          @if (!additionalService.free && additionalService.fixPrice) {
           <span>
               @if (mandatoryPercentage) {
                   <div class="d-inline-flex flex-md-column">

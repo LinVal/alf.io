@@ -74,3 +74,79 @@
     margin-top: 0.35rem !important;
   }
 }
+
+/* Compact shopping-time cards only */
+:host ::ng-deep .shopping-time-available,
+:host ::ng-deep .shopping-time-disabled {
+  margin-top: 0.4rem !important;
+}
+
+/* Compact card */
+:host ::ng-deep .shopping-time-available .card-body,
+:host ::ng-deep .shopping-time-disabled .card-body {
+  padding: 0.45rem 0.75rem !important;
+}
+
+/* Keep title compact */
+:host ::ng-deep .shopping-time-available .card-title,
+:host ::ng-deep .shopping-time-disabled .card-title {
+  font-size: 1rem;
+  line-height: 1.2;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Remove sale-period row */
+:host ::ng-deep .shopping-time-available .card-sale-period,
+:host ::ng-deep .shopping-time-disabled .card-sale-period {
+  display: none !important;
+}
+
+/* Remove description from shopping-time cards */
+:host ::ng-deep .shopping-time-available .card-text,
+:host ::ng-deep .shopping-time-disabled .card-text {
+  display: none !important;
+}
+
+/* Quantity selector vertically centred */
+:host ::ng-deep .shopping-time-available .card-qty-container,
+:host ::ng-deep .shopping-time-disabled .card-qty-container {
+  display: flex;
+  align-items: center;
+  margin-top: 0 !important;
+}
+
+/* Fade the WHOLE unavailable shopping time */
+:host ::ng-deep .shopping-time-disabled {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+/* Slight grey background as well */
+:host ::ng-deep .shopping-time-disabled .card-body {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Mobile: title + quantity selector stay on one row */
+@media (max-width: 767.98px) {
+  :host ::ng-deep .shopping-time-available .item-content-except-desc,
+  :host ::ng-deep .shopping-time-disabled .item-content-except-desc {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  :host ::ng-deep .shopping-time-available .card-title,
+  :host ::ng-deep .shopping-time-disabled .card-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  :host ::ng-deep .shopping-time-available .card-qty-container,
+  :host ::ng-deep .shopping-time-disabled .card-qty-container {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+}
