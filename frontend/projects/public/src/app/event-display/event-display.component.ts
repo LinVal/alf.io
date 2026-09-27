@@ -628,7 +628,7 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
     );
 
   if (selectedCategory == null) {
-    return [];
+    return false;
   }
 
     return selectedCategory.get('ticketCategoryId').value !== categoryId;
@@ -662,13 +662,11 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
       Number(control.get('amount').value) > 0
     );
 
-    // Ingen shoppingtid vald ännu:
-    // visa inte Barn 1-6 år.
-    if (selectedCategory == null) {
-      return this.supplementCategories.filter(
-        supplement => supplement.id !== CHILD_SERVICE_ID
-      );
-    }
+  // Ingen shoppingtid vald ännu:
+  // visa inga tillval.
+  if (selectedCategory == null) {
+    return [];
+  }
 
     const categoryId = Number(
       selectedCategory.get('ticketCategoryId').value
