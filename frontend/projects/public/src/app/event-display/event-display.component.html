@@ -124,17 +124,13 @@
                       [showDiscount]="category.hasDiscount">
                   </app-price-tag>
               </div>
-          <div class="item-qty-selector">
               <app-ticket-quantity-selector
                   [parentGroup]="reservationFormItem(reservationForm, counter)"
                   [category]="category"
                   [quantityRange]="ticketCategoryAmount[category.id]"
                   [disabled]="isCategoryDisabled(category.id)"
-                  (valueChange)="selectionChange()"
-                  (refreshCommand)="handleRefreshCommand()"
-                  [refreshInProgress]="refreshInProgress">
+                  (valueChange)="selectionChange()">
               </app-ticket-quantity-selector>
-          </div>
           @if (!waitingList && !category.saleableAndLimitNotReached && category.containsPendingTickets) {
               <div class="item-info border-top pt-2">
                   <fa-icon [icon]="['fas', 'info-circle']" class="text-primary"></fa-icon>
@@ -143,7 +139,21 @@
           }
         </app-item-card>
       </div>
+        <div class="d-flex justify-content-end mt-3 mb-2">
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                (click)="handleRefreshCommand()"
+                [disabled]="refreshInProgress || refreshCooldown">
 
+                <fa-icon
+                    [icon]="['fas', 'redo-alt']"
+                    [animation]="refreshInProgress ? 'spin' : undefined">
+                </fa-icon>
+
+                Uppdatera tillgänglighet
+            </button>
+        </div>
       <div class="mt-4 text-body-secondary" *ngIf="expiredCategories.length > 0">
         <div class="text-center">
           <button type="button" (click)="expiredCategoriesExpanded = !expiredCategoriesExpanded" class="btn btn-link"><fa-icon [icon]="expiredCategoriesExpanded ? ['fas', 'angle-up'] : ['fas', 'angle-down']" a11yRole="presentation"></fa-icon>&nbsp;{{ 'show-event.expired-categories' | translate }}</button>

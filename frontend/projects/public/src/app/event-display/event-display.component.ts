@@ -134,6 +134,7 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
 
   refreshInProgress: boolean = false;
 
+  refreshCooldown = false;
 
 
   // https://alligator.io/angular/reactive-forms-formarray-dynamic-fields/
@@ -723,11 +724,18 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
 
 
 
-  handleRefreshCommand() {
-
-    this.refreshDebouncer.next(null);
-
+handleRefreshCommand(): void {
+  if (this.refreshCooldown || this.refreshInProgress) {
+    return;
   }
+
+  this.refreshCooldown = true;
+  this.refreshDebouncer.next(new Date().getTime());
+
+  setTimeout(() => {
+    this.refreshCooldown = false;
+  }, 10000);
+}
 
 
 

@@ -17,12 +17,6 @@
         } @else if (category.soldOutOrLimitReached) {
         <span class="fw-bold" translate="show-event.sold-out"></span>
         }
-
-        @if (category.containsPendingTickets || !category.soldOutOrLimitReached) {
-        <button type="button" class="btn btn-sm btn-default" (click)="refreshCategories()">
-            <fa-icon [icon]="['fas', 'redo-alt']" [animation]="refreshInProgress ? 'spin' : undefined"></fa-icon> {{'common.refresh' | translate}}
-        </button>
-        }
     </div>
     }
 </div>
