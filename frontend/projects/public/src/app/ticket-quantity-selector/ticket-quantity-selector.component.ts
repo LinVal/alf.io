@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {TicketCategory} from '../model/ticket-category';
 import {UntypedFormGroup} from '@angular/forms';
 
@@ -6,7 +6,7 @@ import {UntypedFormGroup} from '@angular/forms';
   selector: 'app-ticket-quantity-selector',
   templateUrl: './ticket-quantity-selector.html'
 })
-export class TicketQuantitySelectorComponent {
+export class TicketQuantitySelectorComponent implements OnChanges {
 
   @Input()
   parentGroup: UntypedFormGroup;
@@ -30,6 +30,18 @@ export class TicketQuantitySelectorComponent {
   refreshCommand = new EventEmitter<number>();
 
   formGroup: UntypedFormGroup;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['disabled'] && this.parentGroup) {
+      const amountControl = this.parentGroup.get('amount');
+
+      if (this.disabled) {
+        amountControl.disable({emitEvent: false});
+      } else {
+        amountControl.enable({emitEvent: false});
+      }
+    }
+  }
 
   selectionChanged(): void {
     this.valueChange.next(this.parentGroup.get('amount').value);

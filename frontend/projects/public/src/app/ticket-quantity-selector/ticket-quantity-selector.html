@@ -5,7 +5,6 @@
         [id]="'category-'+category.id+'-qty'"
         formControlName="amount"
         class="form-select"
-        [disabled]="disabled"
         (change)="selectionChanged()">
         @for (qty of quantityRange; track qty) {
         <option [ngValue]="qty">{{qty}}</option>
