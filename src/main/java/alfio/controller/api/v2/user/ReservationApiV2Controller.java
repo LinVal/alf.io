@@ -503,7 +503,23 @@ public class ReservationApiV2Controller {
             //
 
             if(!bindingResult.hasErrors()) {
-                extensionManager.handleReservationValidation(purchaseContext, reservation, contactAndTicketsForm, bindingResult);
+                var tickets =
+                    ticketReservationManager.findTicketsInReservation(reservationId);
+
+                var additionalServiceItems =
+                    additionalServiceManager.findItemsInReservation(
+                        purchaseContext,
+                        reservationId
+                    );
+
+                extensionManager.handleReservationValidation(
+                    purchaseContext,
+                    reservation,
+                    contactAndTicketsForm,
+                    bindingResult,
+                    tickets,
+                    additionalServiceItems
+                );
             }
 
             if(!bindingResult.hasErrors() && (!bindingResult.hasWarnings() || ignoreWarnings)) {
