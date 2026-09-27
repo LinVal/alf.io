@@ -502,7 +502,7 @@ public class ReservationApiV2Controller {
                 () -> additionalServiceManager.findItemsInReservation(purchaseContext, reservationId));
             //
 
-            if(!bindingResult.hasErrors()) {
+            if (!bindingResult.hasErrors()) {
                 var tickets =
                     ticketReservationManager.findTicketsInReservation(reservationId);
 
