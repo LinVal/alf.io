@@ -139,21 +139,7 @@
           }
         </app-item-card>
       </div>
-        <div class="d-flex justify-content-end mt-3 mb-2">
-            <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                (click)="handleRefreshCommand()"
-                [disabled]="refreshInProgress || refreshCooldown">
 
-                <fa-icon
-                    [icon]="['fas', 'redo-alt']"
-                    [animation]="refreshInProgress ? 'spin' : undefined">
-                </fa-icon>
-
-                Uppdatera tillgänglighet
-            </button>
-        </div>
       <div class="mt-4 text-body-secondary" *ngIf="expiredCategories.length > 0">
         <div class="text-center">
           <button type="button" (click)="expiredCategoriesExpanded = !expiredCategoriesExpanded" class="btn btn-link"><fa-icon [icon]="expiredCategoriesExpanded ? ['fas', 'angle-up'] : ['fas', 'angle-down']" a11yRole="presentation"></fa-icon>&nbsp;{{ 'show-event.expired-categories' | translate }}</button>
@@ -212,12 +198,32 @@
       </div>
 
 
-      <div *ngIf="event.promotionsConfiguration.hasAccessPromotions" [ngClass]="{'alert alert-info': displayPromoCodeForm}" class="mt-4">
-        <div class="d-flex justify-content-center justify-content-md-end" *ngIf="!displayPromoCodeForm && eventCode == null">
-          <button type="button" class="btn btn-link" (click)="togglePromoCodeVisible()">
-            <fa-icon [icon]="event.promotionsConfiguration.usePartnerCode ? ['far', 'handshake'] : ['fas', 'gift']" a11yRole="presentation"></fa-icon>{{' '}}
-            <span>{{'show-event.promo-code'|translate: {'0': (event.promotionsConfiguration.usePartnerCode ? 'show-event.promo-code-type.partner' : 'show-event.promo-code-type.promotional') | translate } }}</span>
-          </button>
+        <div class="d-flex justify-content-between align-items-center mt-4"
+             *ngIf="event.promotionsConfiguration.hasAccessPromotions && !displayPromoCodeForm && eventCode == null">
+
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                (click)="handleRefreshCommand()"
+                [disabled]="refreshInProgress || refreshCooldown">
+
+                <fa-icon
+                    [icon]="['fas', 'redo-alt']"
+                    [animation]="refreshInProgress ? 'spin' : undefined">
+                </fa-icon>
+
+                Uppdatera tillgänglighet
+            </button>
+
+            <button type="button" class="btn btn-link" (click)="togglePromoCodeVisible()">
+                <fa-icon
+                    [icon]="event.promotionsConfiguration.usePartnerCode ? ['far', 'handshake'] : ['fas', 'gift']"
+                    a11yRole="presentation">
+                </fa-icon>{{' '}}
+                <span>
+            {{'show-event.promo-code' | translate: {'0': (event.promotionsConfiguration.usePartnerCode ? 'show-event.promo-code-type.partner' : 'show-event.promo-code-type.promotional') | translate } }}
+        </span>
+            </button>
         </div>
         <div *ngIf="displayPromoCodeForm" class="mt-2">
           <div class="row" [formGroup]="promoCodeForm">
@@ -233,24 +239,41 @@
               <button class="btn btn-light ms-2" translate="reservation-page-complete.cancel" type="button" (click)="togglePromoCodeVisible()"></button>
             </div>
           </div>
-        </div>
       </div>
 
       <app-recaptcha [apiKey]="event.captchaConfiguration.recaptchaApiKey" (recaptchaResponse)="handleRecaptchaResponse($event)" *ngIf="event.captchaConfiguration.captchaForTicketSelection && event.captchaConfiguration.recaptchaApiKey"></app-recaptcha>
 
-      <hr class="mt-5">
+    <hr class="mt-5">
 
-      <div class="row d-flex justify-content-between mobile-add-margin-bottom">
-        <div class="col-md-5 order-md-1 col-12">
-            <button type="submit" class="block-button btn btn-success" id="show-event-continue">
+    <div class="row d-flex justify-content-between mobile-add-margin-bottom">
+        <div class="col-md-5 col-12">
+            <a
+                [href]="event.websiteUrl"
+                class="block-button btn btn-light"
+                translate="to-event-site">
+            </a>
+        </div>
+
+        <div class="col-md-5 col-12 ms-md-auto">
+            <button
+                type="submit"
+                class="block-button btn btn-success"
+                id="show-event-continue">
+
                 @if (submitInProgress) {
-                    <fa-icon [icon]="['fas', 'circle-notch']" [animation]="'spin'"></fa-icon>
+                <fa-icon
+                    [icon]="['fas', 'circle-notch']"
+                    [animation]="'spin'">
+                </fa-icon>
                 }
-                <span [ngClass]="{'ms-2': submitInProgress}">{{(submitInProgress ? 'reservation.payment-in-progress' : 'show-event.continue') | translate}}</span>
+
+                <span [ngClass]="{'ms-2': submitInProgress}">
+                {{(submitInProgress ? 'reservation.payment-in-progress' : 'show-event.continue') | translate}}
+            </span>
             </button>
         </div>
-        <div class="col-md-5 order-md-0 col-12 "><a [href]="event.websiteUrl" class="block-button btn btn-light" translate="to-event-site"></a></div>
-      </div>
+    </div>
+
     </form>
 
     </main>
