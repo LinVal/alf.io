@@ -627,9 +627,9 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
       Number(control.get('amount').value) > 0
     );
 
-    if (selectedCategory == null) {
-      return false;
-    }
+  if (selectedCategory == null) {
+    return [];
+  }
 
     return selectedCategory.get('ticketCategoryId').value !== categoryId;
   }
