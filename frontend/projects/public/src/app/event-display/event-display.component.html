@@ -99,7 +99,15 @@
         <h3 translate="show-event.sold-out.header"></h3>
       </div>
       <div *ngFor="let category of ticketCategories;let counter = index" formArrayName="reservation">
-        <app-item-card [currentLang]="translate.currentLang" [item]="category" [formGroupName]="''+counter" [parentFormGroup]="reservationFormItem(reservationForm, counter)" [additionalClass]="category.accessRestricted ? 'ticket-category-restricted border-warning shadow-sm ': ''">
+          <app-item-card
+              [currentLang]="translate.currentLang"
+              [item]="category"
+              [formGroupName]="''+counter"
+              [parentFormGroup]="reservationFormItem(reservationForm, counter)"
+              [additionalClass]="
+                (category.accessRestricted ? 'ticket-category-restricted border-warning shadow-sm ' : '') +
+                (isCategoryDisabled(category.id) ? 'shopping-time-disabled ' : 'shopping-time-available ')
+          ">
           <span class="item-title">
             {{category.name}}
           </span>

@@ -17,3 +17,60 @@
 .text-body-secondary .btn-link {
   color: $body-secondary-color;
 }
+/* Compact shopping-time cards */
+:host ::ng-deep .shopping-time-available,
+:host ::ng-deep .shopping-time-disabled {
+  margin-top: 0.5rem !important;
+}
+
+:host ::ng-deep .shopping-time-available .card-body,
+:host ::ng-deep .shopping-time-disabled .card-body {
+  padding: 0.6rem 0.8rem !important;
+}
+
+/* Keep the main row compact */
+:host ::ng-deep .shopping-time-available .card-title,
+:host ::ng-deep .shopping-time-disabled .card-title {
+  font-size: 1rem;
+  margin-bottom: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Sale-period information takes unnecessary vertical space here */
+:host ::ng-deep .shopping-time-available .card-sale-period,
+:host ::ng-deep .shopping-time-disabled .card-sale-period {
+  display: none !important;
+}
+
+/* Hide ticket descriptions in the compact shopping-time list */
+:host ::ng-deep .shopping-time-available .card-text,
+:host ::ng-deep .shopping-time-disabled .card-text {
+  display: none !important;
+}
+
+/* Disabled shopping times: fade the entire card */
+:host ::ng-deep .shopping-time-disabled {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+/* Make it visually obvious that these cannot be selected */
+:host ::ng-deep .shopping-time-disabled .card-body {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Compact quantity selector */
+:host ::ng-deep .shopping-time-available .card-qty-container,
+:host ::ng-deep .shopping-time-disabled .card-qty-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Mobile: don't add the normal large gap above the selector */
+@media (max-width: 767.98px) {
+  :host ::ng-deep .shopping-time-available .card-qty-container,
+  :host ::ng-deep .shopping-time-disabled .card-qty-container {
+    margin-top: 0.35rem !important;
+  }
+}
