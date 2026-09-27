@@ -633,9 +633,59 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
 
     return selectedCategory.get('ticketCategoryId').value !== categoryId;
   }
+  get visibleSupplementCategories(): AdditionalService[] {
+    if (!this.supplementCategories) {
+      return [];
+    }
 
+    const CHILD_SERVICE_ID = 260;
 
+    const blockedChildServiceCategories = new Set([
+      366, // Shoppingtid kl. 09.00
+      367, // Shoppingtid kl. 10.00
+      368, // Shoppingtid kl. 11.00
+      374, // Shoppingtid
+      375, // Lördag kl. 09.00
+      376, // Lördag kl. 10.00
+      377 // Lördag kl. 11.00
+    ]);
 
+    const reservation = this.reservationForm?.get('reservation') as UntypedFormArray;
+
+    if (!reservation) {
+      return this.supplementCategories.filter(
+        supplement => supplement.id !== CHILD_SERVICE_ID
+      );
+    }
+
+    const selectedCategory = reservation.controls.find(control =>
+      Number(control.get('amount').value) > 0
+    );
+
+    // Ingen shoppingtid vald ännu:
+    // visa inte Barn 1-6 år.
+    if (selectedCategory == null) {
+      return this.supplementCategories.filter(
+        supplement => supplement.id !== CHILD_SERVICE_ID
+      );
+    }
+
+    const categoryId = Number(
+      selectedCategory.get('ticketCategoryId').value
+    );
+
+    // Tid före kl. 12:
+    // visa inte Barn 1-6 år.
+    if (blockedChildServiceCategories.has(categoryId)) {
+      return this.supplementCategories.filter(
+        supplement => supplement.id !== CHILD_SERVICE_ID
+      );
+    }
+
+    // Tillåten shoppingtid:
+    // visa alla tilläggstjänster.
+    return this.supplementCategories;
+  }
 
   get dynamicDiscountMessage(): string {
 
