@@ -18,6 +18,9 @@ export class TicketQuantitySelectorComponent {
   quantityRange: number[];
 
   @Input()
+  disabled: boolean = false;
+
+  @Input()
   refreshInProgress: boolean = false;
 
   @Output()

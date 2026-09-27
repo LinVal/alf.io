@@ -1,26 +1,31 @@
 <div [formGroup]="parentGroup">
-  @if (category.saleableAndLimitNotReached) {
+    @if (category.saleableAndLimitNotReached) {
     <label class="sr-only" [for]="'category-'+category.id+'-qty'" translate="show-event.category.quantity"></label>
-    <select [id]="'category-'+category.id+'-qty'" formControlName="amount" class="form-select" (change)="selectionChanged()">
-      @for (qty of quantityRange; track qty) {
+    <select
+        [id]="'category-'+category.id+'-qty'"
+        formControlName="amount"
+        class="form-select"
+        [disabled]="disabled"
+        (change)="selectionChanged()">
+        @for (qty of quantityRange; track qty) {
         <option [ngValue]="qty">{{qty}}</option>
-      }
+        }
     </select>
-  } @else {
-      <div class="d-flex flex-column align-items-center gap-2">
-      @if (category.containsPendingTickets) {
-          <span class="fw-bold" translate="show-event.all-tickets-reserved"></span>
-      } @else if (category.soldOutOrLimitReached) {
-          <span class="fw-bold" translate="show-event.sold-out"></span>
-      } @else {
-          <span class="fw-bold" translate="show-event.not-available"></span>
-      }
+    } @else {
+    <div class="d-flex flex-column align-items-center gap-2">
+        @if (category.containsPendingTickets) {
+        <span class="fw-bold" translate="show-event.all-tickets-reserved"></span>
+        } @else if (category.soldOutOrLimitReached) {
+        <span class="fw-bold" translate="show-event.sold-out"></span>
+        } @else {
+        <span class="fw-bold" translate="show-event.not-available"></span>
+        }
 
-      @if (category.containsPendingTickets || !category.soldOutOrLimitReached) {
-          <button type="button" class="btn btn-sm btn-default" (click)="refreshCategories()">
-              <fa-icon [icon]="['fas', 'redo-alt']" [animation]="refreshInProgress ? 'spin' : undefined"></fa-icon> {{'common.refresh' | translate}}
-          </button>
-      }
-      </div>
-  }
+        @if (category.containsPendingTickets || !category.soldOutOrLimitReached) {
+        <button type="button" class="btn btn-sm btn-default" (click)="refreshCategories()">
+            <fa-icon [icon]="['fas', 'redo-alt']" [animation]="refreshInProgress ? 'spin' : undefined"></fa-icon> {{'common.refresh' | translate}}
+        </button>
+        }
+    </div>
+    }
 </div>

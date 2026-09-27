@@ -118,7 +118,8 @@
                   [parentGroup]="reservationFormItem(reservationForm, counter)"
                   [category]="category"
                   [quantityRange]="ticketCategoryAmount[category.id]"
-                  (valueChange)="selectionChange(category.id, $event)"
+                  [disabled]="isCategoryDisabled(category.id)"
+                  (valueChange)="selectionChange()"
                   (refreshCommand)="handleRefreshCommand()"
                   [refreshInProgress]="refreshInProgress">
               </app-ticket-quantity-selector>
