@@ -131,7 +131,36 @@ export class BookingComponent implements OnInit, AfterViewInit {
               const billingDetails = this.reservationInfo.billingDetails;
               const userBillingDetails = user?.profile?.billingDetails;
 
-              const additionalServices = reservationInfo.additionalServiceWithData ?? [];
+              const blockedChildServiceCategories = new Set([
+                  366, // Shoppingtid kl. 09.00
+                  367, // Shoppingtid kl. 10.00
+                  368, // Shoppingtid kl. 11.00
+                  374, // Shoppingtid
+                  375, // Lördag kl. 09.00
+                  376, // Lördag kl. 10.00
+                  377, // Lördag kl. 11.00
+                  383  // Söndag kl. 08.30
+              ]);
+
+              const ticketCategoryByUuid = new Map<string, number>();
+
+              reservationInfo.ticketsByCategory.forEach(category => {
+                  category.tickets.forEach(ticket => {
+                      ticketCategoryByUuid.set(ticket.uuid, category.categoryId);
+                  });
+              });
+
+              const additionalServices = (reservationInfo.additionalServiceWithData ?? [])
+                  .filter(service => {
+                      if (service.serviceId !== 260 || service.ticketUUID == null) {
+                          return true;
+                      }
+
+                      const categoryId = ticketCategoryByUuid.get(service.ticketUUID);
+
+                      return categoryId == null ||
+                          !blockedChildServiceCategories.has(categoryId);
+                  });
               this.contactAndTicketsForm = this.formBuilder.group({
                   firstName: this.formBuilder.control(this.reservationInfo.firstName || user?.firstName, [Validators.required, Validators.maxLength(255)]),
                   lastName: this.formBuilder.control(this.reservationInfo.lastName || user?.lastName, [Validators.required, Validators.maxLength(255)]),

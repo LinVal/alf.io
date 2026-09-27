@@ -169,7 +169,7 @@ public class ReservationApiV2Controller {
                             var ts = e.getValue().stream()
                                 .map(t -> bookingInfoTicketLoader.toBookingInfoTicket(t, hasPaidSupplement, event, ticketFieldsFilterer, descriptionsByFieldId, valuesByTicketIds, Map.of(), false, context))
                                 .collect(Collectors.toList());
-                            return new TicketsByTicketCategory(tc.getName(), tc.getTicketAccessType(), ts);
+                            return new TicketsByTicketCategory(tc.getId(), tc.getName(), tc.getTicketAccessType(), ts);
                         })
                         .collect(Collectors.toList());
                     containsCategoriesLinkedToGroups = ticketReservationManager.containsCategoriesLinkedToGroups(reservationId, event.getId());

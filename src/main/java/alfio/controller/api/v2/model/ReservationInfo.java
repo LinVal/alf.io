@@ -89,11 +89,11 @@ public class ReservationInfo {
     @AllArgsConstructor
     @Getter
     public static class TicketsByTicketCategory {
+        private final int categoryId;
         private final String name;
         private final TicketCategory.TicketAccessType ticketAccessType;
         private final List<BookingInfoTicket> tickets;
     }
-
 
     @Getter
     public static class ReservationInfoOrderSummary {

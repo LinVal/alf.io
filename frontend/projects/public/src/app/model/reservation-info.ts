@@ -96,6 +96,7 @@ export class ReservationStatusInfo {
 }
 
 export class TicketsByTicketCategory {
+    categoryId: number;
     name: string;
     ticketAccessType: TicketAccessType;
     tickets: Ticket[];

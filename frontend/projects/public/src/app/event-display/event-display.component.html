@@ -114,12 +114,14 @@
             </span>
           </div>
           <div class="item-qty-selector">
-              <app-ticket-quantity-selector [parentGroup]="reservationFormItem(reservationForm, counter)"
-                [category]="category"
-                [quantityRange]="ticketCategoryAmount[category.id]"
-                (valueChange)="selectionChange()"
-                (refreshCommand)="handleRefreshCommand()"
-                [refreshInProgress]="refreshInProgress"></app-ticket-quantity-selector>
+              <app-ticket-quantity-selector
+                  [parentGroup]="reservationFormItem(reservationForm, counter)"
+                  [category]="category"
+                  [quantityRange]="ticketCategoryAmount[category.id]"
+                  (valueChange)="selectionChange(category.id, $event)"
+                  (refreshCommand)="handleRefreshCommand()"
+                  [refreshInProgress]="refreshInProgress">
+              </app-ticket-quantity-selector>
           </div>
           @if (!waitingList && !category.saleableAndLimitNotReached && category.containsPendingTickets) {
               <div class="item-info border-top pt-2">

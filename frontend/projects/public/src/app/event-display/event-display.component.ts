@@ -304,14 +304,30 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
     this.applyPromoCode();
   }
 
-  selectionChange(): void {
-    if (this.eventCode == null || this.eventCode.type === 'ACCESS') {
-      this.reservationService.checkDynamicDiscountAvailability(this.event.shortName, this.reservationForm.value)
-        .subscribe(d => {
-          this.dynamicDiscount = d;
-        });
+  selectionChange(categoryId: number, amount: number): void {
+    if (amount > 0) {
+      const reservation = this.reservationForm.get('reservation') as UntypedFormArray;
+
+      reservation.controls.forEach(control => {
+        const currentCategoryId = control.get('ticketCategoryId').value;
+
+        if (currentCategoryId !== categoryId) {
+          control.get('amount').setValue(0, {emitEvent: false});
+        }
+      });
     }
+
+  if (this.eventCode == null || this.eventCode.type === 'ACCESS') {
+    this.reservationService
+      .checkDynamicDiscountAvailability(
+        this.event.shortName,
+        this.reservationForm.value
+      )
+      .subscribe(d => {
+        this.dynamicDiscount = d;
+      });
   }
+}
 
   get dynamicDiscountMessage(): string {
     if (this.dynamicDiscount != null) {

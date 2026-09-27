@@ -200,7 +200,7 @@ public class TicketApiV2Controller {
                 var event = complete.getLeft();
 
                 var category = ticketCategoryRepository.getByIdAndActive(ticket.getCategoryId(), event.getId());
-                return new ReservationInfo.TicketsByTicketCategory(category.getName(), category.getTicketAccessType(), List.of(bookingInfoTicketLoader.toBookingInfoTicket(ticket, event, EVENT_RELATED_CONTEXTS)));
+                return new ReservationInfo.TicketsByTicketCategory(category.getId(), category.getName(), category.getTicketAccessType(), List.of(bookingInfoTicketLoader.toBookingInfoTicket(ticket, event, EVENT_RELATED_CONTEXTS)));
             });
         return ResponseEntity.of(optionalTicket);
     }
