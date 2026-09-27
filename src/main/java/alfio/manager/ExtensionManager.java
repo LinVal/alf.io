@@ -376,7 +376,10 @@ public class ExtensionManager {
         asyncCall(ExtensionEvent.TICKET_REVERT_CHECKED_IN, event, payload);
     }
 
-    public void handleReservationValidation(PurchaseContext purchaseContext, TicketReservation reservation, Object clientForm, BindingResult bindingResult) {
+    public void handleReservationValidation(PurchaseContext purchaseContext,
+                                            TicketReservation reservation,
+                                            Object clientForm,
+                                            BindingResult bindingResult) {
         Map<String, Object> payload = Map.of(
             RESERVATION_ID, reservation.getId(),
             RESERVATION, reservation,
@@ -384,7 +387,35 @@ public class ExtensionManager {
             "bindingResult", bindingResult
         );
 
-        syncCall(ExtensionEvent.RESERVATION_VALIDATION, purchaseContext, payload, Void.class);
+        syncCall(
+            ExtensionEvent.RESERVATION_VALIDATION,
+            purchaseContext,
+            payload,
+            Void.class
+        );
+    }
+
+    public void handleReservationValidation(PurchaseContext purchaseContext,
+                                            TicketReservation reservation,
+                                            Object clientForm,
+                                            BindingResult bindingResult,
+                                            List<Ticket> tickets,
+                                            List<AdditionalServiceItem> additionalServiceItems) {
+        Map<String, Object> payload = Map.of(
+            RESERVATION_ID, reservation.getId(),
+            RESERVATION, reservation,
+            "form", clientForm,
+            "bindingResult", bindingResult,
+            "tickets", tickets,
+            "additionalServiceItems", additionalServiceItems
+        );
+
+        syncCall(
+            ExtensionEvent.RESERVATION_VALIDATION,
+            purchaseContext,
+            payload,
+            Void.class
+        );
     }
 
     public void handleTicketUpdateValidation(PurchaseContext purchaseContext, UpdateTicketOwnerForm form, BindingResult bindingResult, String keyPrefix) {
