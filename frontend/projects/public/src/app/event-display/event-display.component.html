@@ -124,13 +124,15 @@
                       [showDiscount]="category.hasDiscount">
                   </app-price-tag>
               </div>
-              <app-ticket-quantity-selector
-                  [parentGroup]="reservationFormItem(reservationForm, counter)"
-                  [category]="category"
-                  [quantityRange]="ticketCategoryAmount[category.id]"
-                  [disabled]="isCategoryDisabled(category.id)"
-                  (valueChange)="selectionChange()">
-              </app-ticket-quantity-selector>
+              <div class="item-qty-selector">
+                  <app-ticket-quantity-selector
+                      [parentGroup]="reservationFormItem(reservationForm, counter)"
+                      [category]="category"
+                      [quantityRange]="ticketCategoryAmount[category.id]"
+                      [disabled]="isCategoryDisabled(category.id)"
+                      (valueChange)="selectionChange()">
+                  </app-ticket-quantity-selector>
+              </div>
           @if (!waitingList && !category.saleableAndLimitNotReached && category.containsPendingTickets) {
               <div class="item-info border-top pt-2">
                   <fa-icon [icon]="['fas', 'info-circle']" class="text-primary"></fa-icon>
