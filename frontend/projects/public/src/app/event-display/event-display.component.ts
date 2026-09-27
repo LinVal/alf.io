@@ -612,7 +612,7 @@ export class EventDisplayComponent implements OnInit, OnDestroy {
       this.reservationService
         .checkDynamicDiscountAvailability(
           this.event.shortName,
-          this.reservationForm.value
+          this.reservationForm.getRawValue()
         )
         .subscribe(d => {
           this.dynamicDiscount = d;
